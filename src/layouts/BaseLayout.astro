@@ -1,0 +1,85 @@
+---
+import { Image } from 'astro:assets';
+import logoColor from '@/assets/brand/MasAlto_Producciones_Color_Fondo_Claro.png';
+import '@/styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Las herramientas internas no se indexan. */
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const inicio = import.meta.env.BASE_URL;
+const anio = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="theme-color" content="#E30613" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_AR" />
+    <link rel="icon" type="image/png" href={`${inicio}favicon.png`} />
+    <link
+      rel="apple-touch-icon"
+      href={`${inicio}icons/apple-touch-icon-180x180.png`}
+    />
+    <link rel="manifest" href={`${inicio}manifest.webmanifest`} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Nunito+Sans:wght@400;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <header class="ma-header">
+      <div class="ma-contenedor ma-header__interior">
+        <a href={inicio} aria-label="MasAlto Producciones - inicio">
+          <Image
+            class="ma-logo"
+            src={logoColor}
+            alt="MasAlto Producciones"
+            widths={[220, 440]}
+            sizes="220px"
+            loading="eager"
+          />
+        </a>
+        <span class="ma-dato" aria-hidden="true">StagePlot</span>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="ma-footer">
+      <div class="ma-contenedor">
+        <p>MasAlto Producciones &middot; {anio}</p>
+      </div>
+    </footer>
+
+    <script is:inline define:vars={{ inicio }}>
+      // Registro del Service Worker. El scope tiene que ser la subruta completa
+      // o el SW no controla /stageplot/.
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker
+            .register(`${inicio}sw.js`, { scope: inicio })
+            .catch((error) => console.error('SW no registrado:', error));
+        });
+      }
+    </script>
+  </body>
+</html>

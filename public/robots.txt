@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /stageplot/crear
+
+Sitemap: https://masalto.com.ar/stageplot/sitemap-index.xml

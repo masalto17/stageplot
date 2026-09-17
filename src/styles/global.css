@@ -1,0 +1,169 @@
+/* Sistema visual MasAlto Producciones.
+   Solo se usan los colores autorizados: rojo #E30613, negro #000000, blanco
+   #FFFFFF. Los grises son opacidades del negro, no HEX de apoyo inventados. */
+:root {
+  --ma-rojo: #e30613;
+  --ma-negro: #000000;
+  --ma-blanco: #ffffff;
+
+  --ma-texto: var(--ma-negro);
+  --ma-texto-suave: rgba(0, 0, 0, 0.64);
+  --ma-borde: rgba(0, 0, 0, 0.12);
+  --ma-superficie: rgba(0, 0, 0, 0.04);
+  --ma-fondo: var(--ma-blanco);
+
+  --ma-fuente-ui: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ma-fuente-datos: 'IBM Plex Mono', 'Roboto Mono', ui-monospace, monospace;
+
+  --ma-radio: 10px;
+  --ma-ancho: 1100px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ma-fondo);
+  color: var(--ma-texto);
+  font-family: var(--ma-fuente-ui);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.5em;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: clamp(2rem, 6vw, 3.25rem);
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+a {
+  color: var(--ma-rojo);
+}
+
+.ma-dato {
+  font-family: var(--ma-fuente-datos);
+  font-variant-numeric: tabular-nums;
+}
+
+.ma-contenedor {
+  width: 100%;
+  max-width: var(--ma-ancho);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.ma-header,
+.ma-footer {
+  border-bottom: 1px solid var(--ma-borde);
+}
+
+.ma-footer {
+  border-bottom: 0;
+  border-top: 1px solid var(--ma-borde);
+  margin-top: 64px;
+  padding: 28px 0;
+  color: var(--ma-texto-suave);
+  font-size: 0.9rem;
+}
+
+.ma-header__interior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 16px 0;
+}
+
+/* Tamano minimo de la unidad con descriptor: 220 px de ancho (Brand Master). */
+.ma-logo {
+  display: inline-block;
+  width: 220px;
+  height: auto;
+  /* Espacio de seguridad: el PNG ya trae su lienzo, no se recorta. */
+}
+
+.ma-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border: 1px solid var(--ma-rojo);
+  border-radius: var(--ma-radio);
+  background: var(--ma-rojo);
+  color: var(--ma-blanco);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.ma-boton--secundario {
+  background: transparent;
+  color: var(--ma-texto);
+  border-color: var(--ma-borde);
+}
+
+.ma-boton:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--ma-rojo);
+  outline-offset: 2px;
+}
+
+.ma-hero {
+  padding: 56px 0 40px;
+}
+
+.ma-hero__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.ma-lista {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  padding: 0;
+  margin: 40px 0 0;
+  list-style: none;
+}
+
+.ma-lista li {
+  border: 1px solid var(--ma-borde);
+  border-radius: var(--ma-radio);
+  padding: 18px;
+  background: var(--ma-superficie);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,28 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const crear = `${import.meta.env.BASE_URL}crear`;
+---
+
+<BaseLayout
+  title="MasAlto StagePlot - Crea tu stage plot gratis"
+  description="Arma el stage plot de tu show y su lista de canales en minutos. Gratis, desde el celular, y lo compartis en PDF por WhatsApp."
+>
+  <section class="ma-hero ma-contenedor">
+    <h1>El stage plot de tu show, listo en minutos</h1>
+    <p>
+      Arrastra los equipos, obtene la lista de canales automatica y compartila en
+      PDF con el sonidista. Gratis, sin registro y desde el celular.
+    </p>
+    <div class="ma-hero__acciones">
+      <a class="ma-boton" href={crear}>Crear stage plot</a>
+    </div>
+
+    <ul class="ma-lista">
+      <li><strong>Lienzo drag &amp; drop</strong><br />Movil y escritorio.</li>
+      <li><strong>Lista de canales</strong><br />Se arma sola con cada equipo.</li>
+      <li><strong>Export PDF</strong><br />Plano + tabla de canales.</li>
+      <li><strong>Compartir</strong><br />WhatsApp o mail, en un toque.</li>
+    </ul>
+  </section>
+</BaseLayout>

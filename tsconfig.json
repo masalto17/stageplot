@@ -1,0 +1,18 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "types": ["vite-plugin-pwa/info", "vite-plugin-pwa/client"]
+  },
+  "include": [".astro/types.d.ts", "**/*.astro", "**/*.ts", "**/*.tsx"],
+  "exclude": ["dist", "node_modules"]
+}

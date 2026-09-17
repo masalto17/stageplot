@@ -1,0 +1,12 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import StagePlotApp from '@/components/StagePlotApp';
+---
+
+<BaseLayout
+  title="Crear stage plot - MasAlto StagePlot"
+  description="Editor de stage plots de MasAlto Producciones."
+  noindex
+>
+  <StagePlotApp client:only="react" />
+</BaseLayout>

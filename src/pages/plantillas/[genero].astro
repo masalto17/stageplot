@@ -1,0 +1,38 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+/** Placeholder de B1: solo los generos previstos, contenido real mas adelante. */
+export function getStaticPaths() {
+  const GENEROS = [
+    { slug: 'rock', nombre: 'Banda de rock' },
+    { slug: 'solista', nombre: 'Solista' },
+    { slug: 'dj', nombre: 'DJ' },
+    { slug: 'folklore', nombre: 'Folklore' },
+  ] as const;
+
+  return GENEROS.map((genero) => ({
+    params: { genero: genero.slug },
+    props: { nombre: genero.nombre },
+  }));
+}
+
+interface Props {
+  nombre: string;
+}
+
+const { nombre } = Astro.props;
+const crear = `${import.meta.env.BASE_URL}crear`;
+---
+
+<BaseLayout
+  title={`Plantilla de stage plot para ${nombre} - MasAlto StagePlot`}
+  description={`Plantilla de stage plot y lista de canales para ${nombre}.`}
+>
+  <section class="ma-hero ma-contenedor">
+    <h1>Stage plot para {nombre}</h1>
+    <p>Plantilla en preparacion. Mientras tanto, arranca desde cero.</p>
+    <div class="ma-hero__acciones">
+      <a class="ma-boton" href={crear}>Crear stage plot</a>
+    </div>
+  </section>
+</BaseLayout>
