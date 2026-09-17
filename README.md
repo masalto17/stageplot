@@ -62,6 +62,12 @@ MasAlto Producciones (hoy `BLOQUEADO` en el manifiesto del Brand Master).
 
 ## Indexacion
 
+Mientras el sitio vive en la URL de staging (`masalto17.github.io/stageplot/`)
+todas las paginas salen con `noindex, nofollow`. El interruptor es la variable
+`PUBLIC_SITIO_INDEXABLE` (ver `.env.example` y el workflow de deploy): pasa a
+`true` el dia que el sitio se sirva desde `masalto.com.ar/stageplot/`.
+
+
 `/crear` queda fuera del sitemap y lleva `noindex, nofollow` en el HTML, que es
 el control que realmente aplica. `public/robots.txt` se publica en
 `/stageplot/robots.txt`: los crawlers solo leen el `robots.txt` de la raiz del

@@ -1,3 +1,7 @@
+# Staging: mientras el sitio no viva en masalto.com.ar no se indexa nada.
+# El control efectivo es el <meta name="robots"> que renderiza BaseLayout.astro
+# (los crawlers solo leen el robots.txt de la raiz del dominio, y este archivo
+# se publica en /stageplot/robots.txt).
 User-agent: *
 Disallow: /stageplot/crear
 

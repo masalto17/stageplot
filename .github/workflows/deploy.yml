@@ -35,6 +35,10 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Staging en github.io: no se indexa. Pasar a "true" recien cuando el
+          # sitio se sirva desde masalto.com.ar/stageplot/.
+          PUBLIC_SITIO_INDEXABLE: 'false'
 
       - name: Subir artefacto de Pages
         if: github.event_name != 'pull_request'
