@@ -11,7 +11,9 @@ const BASE = '/stageplot/';
 export default defineConfig({
   site: SITE,
   base: BASE,
-  trailingSlash: 'ignore',
+  // GitHub Pages redirige /crear a /crear/: se usa la forma con barra en los
+  // enlaces para no pagar un salto 301 en cada navegacion.
+  trailingSlash: 'always',
   integrations: [
     react(),
     sitemap({
