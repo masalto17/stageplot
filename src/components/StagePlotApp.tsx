@@ -5,28 +5,31 @@ import { Lienzo } from './Lienzo';
 import { PanelSeleccion } from './PanelSeleccion';
 import { ListaCanales } from './ListaCanales';
 import { Onboarding } from './Onboarding';
+import { ControlesLienzo } from './ControlesLienzo';
 import { hidratarProyecto, iniciarAutoguardado } from '@/store/persistencia';
 import { useProyecto } from '@/store/proyecto';
 import { plantillaBanda, plantillaPorSlug } from '@/lib/plantilla';
 import { useAtajos } from '@/hooks/useAtajos';
+import { UI } from '@/i18n/idioma';
 
 /**
- * Root del editor. Se encarga del ciclo de vida:
- *  1. Intenta hidratar el proyecto desde IndexedDB.
- *  2. Si no habia nada, precarga la plantilla banda.
- *  3. Arranca el autoguardado.
+ * Root del editor. Cicla:
+ *  1. Si el URL tiene `#p=<slug>`, carga esa plantilla (gana sobre lo persistido).
+ *  2. Sino, hidrata de IndexedDB.
+ *  3. Si tampoco hay nada persistido, precarga la plantilla banda.
+ *  4. Arranca el autoguardado.
  */
 export default function StagePlotApp() {
   const [listo, setListo] = useState(false);
   const [tab, setTab] = useState<'plano' | 'canales'>('plano');
   const lienzoRef = useRef<HTMLDivElement>(null);
   const cargar = useProyecto((s) => s.cargarProyecto);
+  const idioma = useProyecto((s) => s.idioma);
+  const t = UI[idioma];
 
   useEffect(() => {
     let desuscribir: (() => void) | undefined;
     (async () => {
-      // Plantilla venida del hash gana sobre lo persistido: la landing por
-      // genero acaba de mandar al usuario aca justamente para partir de esa.
       const hashPlantilla = leerHashPlantilla();
       if (hashPlantilla) {
         const proyecto = plantillaPorSlug(hashPlantilla);
@@ -35,7 +38,6 @@ export default function StagePlotApp() {
           const habia = await hidratarProyecto();
           if (!habia) cargar(plantillaBanda());
         }
-        // Limpiamos el hash: un F5 no debe reimponer la plantilla.
         history.replaceState(null, '', location.pathname);
       } else {
         const habia = await hidratarProyecto();
@@ -54,7 +56,7 @@ export default function StagePlotApp() {
   if (!listo) {
     return (
       <div className="ma-editor__cargando">
-        <p className="ma-dato">Cargando...</p>
+        <p className="ma-dato">{t.cargando}</p>
       </div>
     );
   }
@@ -75,7 +77,7 @@ export default function StagePlotApp() {
               className={`ma-tabs__item${tab === 'plano' ? ' ma-tabs__item--activo' : ''}`}
               onClick={() => setTab('plano')}
             >
-              Plano
+              {t.plano}
             </button>
             <button
               type="button"
@@ -84,14 +86,16 @@ export default function StagePlotApp() {
               className={`ma-tabs__item${tab === 'canales' ? ' ma-tabs__item--activo' : ''}`}
               onClick={() => setTab('canales')}
             >
-              Canales
+              {t.canales}
             </button>
+            <ControlesLienzo />
           </nav>
 
           {/*
-            El lienzo se mantiene montado siempre (aunque este oculto) porque
-            html2canvas necesita medir su tamano real para el PDF. Se oculta
-            con visibility, no con display, para conservar layout.
+            El lienzo se mantiene montado siempre; se oculta con `display` para
+            no interferir con la tab de canales, pero html2canvas necesita
+            medirlo, asi que se apoya en un elemento DIV separado que se
+            imprime al PDF.
           */}
           <div
             className="ma-editor__panel"
@@ -103,7 +107,7 @@ export default function StagePlotApp() {
           </div>
 
           {tab === 'canales' && (
-            <div className="ma-editor__panel">
+            <div className="ma-editor__panel ma-editor__panel--canales">
               <ListaCanales />
             </div>
           )}

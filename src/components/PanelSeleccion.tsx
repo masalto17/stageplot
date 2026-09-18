@@ -1,55 +1,58 @@
 import { useProyecto } from '@/store/proyecto';
 import { EQUIPOS_POR_ID } from '@/icons/catalog';
+import { UI } from '@/i18n/idioma';
 
 /**
- * Panel de edicion del instrumento seleccionado: etiqueta, rotacion, borrar.
- * Se renderiza siempre; oculto sin seleccion para reservar el layout (evita
- * salto al hacer click en un icono).
+ * Panel de edicion del instrumento seleccionado. Se renderiza siempre; sin
+ * seleccion muestra un tip breve para no dejar un hueco visual.
  */
 export function PanelSeleccion() {
   const seleccionadoId = useProyecto((s) => s.seleccionadoId);
   const instrumento = useProyecto((s) =>
     s.proyecto.instrumentos.find((i) => i.id === s.seleccionadoId),
   );
+  const idioma = useProyecto((s) => s.idioma);
   const rotar = useProyecto((s) => s.rotarInstrumento);
-  const etiquetar = useProyecto((s) => s.etiquetarInstrumento);
   const duplicar = useProyecto((s) => s.duplicarInstrumento);
+  const etiquetar = useProyecto((s) => s.etiquetarInstrumento);
   const eliminar = useProyecto((s) => s.eliminarInstrumento);
   const traerAlFrente = useProyecto((s) => s.traerAlFrente);
   const enviarAlFondo = useProyecto((s) => s.enviarAlFondo);
   const seleccionar = useProyecto((s) => s.seleccionar);
+  const t = UI[idioma];
 
   if (!seleccionadoId || !instrumento) {
     return (
-      <div className="ma-panel-sel ma-panel-sel--vacio">
-        <p>Toca un equipo del lienzo para editarlo.</p>
-      </div>
+      <aside className="ma-panel-sel ma-panel-sel--vacio">
+        <p>{t.seleccionarTip}</p>
+      </aside>
     );
   }
 
   const equipo = EQUIPOS_POR_ID.get(instrumento.equipoId);
   if (!equipo) return null;
+  const nombre = equipo.nombre[idioma];
 
   return (
-    <div className="ma-panel-sel">
+    <aside className="ma-panel-sel">
       <header>
-        <strong>{equipo.nombre}</strong>
+        <strong>{nombre}</strong>
         <button
           type="button"
           className="ma-boton-icono"
           onClick={() => seleccionar(null)}
-          aria-label="Cerrar panel"
+          aria-label={t.cerrarPanel}
         >
           x
         </button>
       </header>
 
       <label className="ma-campo">
-        <span>Etiqueta</span>
+        <span>{t.etiqueta}</span>
         <input
           type="text"
           value={instrumento.etiqueta ?? ''}
-          placeholder={equipo.nombre}
+          placeholder={nombre}
           onChange={(e) => etiquetar(instrumento.id, e.target.value)}
           maxLength={40}
         />
@@ -61,48 +64,46 @@ export function PanelSeleccion() {
           className="ma-boton ma-boton--secundario"
           onClick={() => rotar(instrumento.id, -15)}
         >
-          Girar -15
+          {t.girarIzquierda}
         </button>
         <button
           type="button"
           className="ma-boton ma-boton--secundario"
           onClick={() => rotar(instrumento.id, 15)}
         >
-          Girar +15
+          {t.girarDerecha}
         </button>
         <button
           type="button"
           className="ma-boton ma-boton--secundario"
           onClick={() => duplicar(instrumento.id)}
-          title="Duplicar (Cmd+D)"
+          title="Cmd/Ctrl + D"
         >
-          Duplicar
+          {t.duplicar}
         </button>
         <button
           type="button"
           className="ma-boton ma-boton--secundario"
           onClick={() => traerAlFrente(instrumento.id)}
-          title="Traer al frente"
         >
-          Al frente
+          {t.alFrente}
         </button>
         <button
           type="button"
           className="ma-boton ma-boton--secundario"
           onClick={() => enviarAlFondo(instrumento.id)}
-          title="Enviar al fondo"
         >
-          Al fondo
+          {t.alFondo}
         </button>
         <button
           type="button"
-          className="ma-boton ma-boton--secundario"
+          className="ma-boton ma-boton--secundario ma-boton--peligro"
           onClick={() => eliminar(instrumento.id)}
-          title="Eliminar (Supr)"
+          title="Supr / Del"
         >
-          Eliminar
+          {t.eliminar}
         </button>
       </div>
-    </div>
+    </aside>
   );
 }

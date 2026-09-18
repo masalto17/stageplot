@@ -1,44 +1,30 @@
 import { useEffect, useState } from 'react';
+import { useProyecto } from '@/store/proyecto';
+import { UI } from '@/i18n/idioma';
 
 const CLAVE = 'stageplot:onboarding-visto';
 
-interface Paso {
-  titulo: string;
-  texto: string;
-}
-
-const PASOS: readonly Paso[] = [
-  {
-    titulo: 'Agrega equipos',
-    texto:
-      'Toca un icono de la biblioteca para sumarlo al escenario. Arrastra para moverlo.',
-  },
-  {
-    titulo: 'La lista se arma sola',
-    texto:
-      'Cada equipo agrega sus canales automaticamente. Editas el nombre desde el panel de seleccion.',
-  },
-  {
-    titulo: 'Compartilo',
-    texto:
-      'Cuando termines, exporta el PDF y mandalo por WhatsApp o mail al sonidista.',
-  },
-];
-
 /**
- * Onboarding de tres pasos. Se muestra la primera vez y se marca como visto en
- * localStorage. No captura email ni datos: fue una decision explicita del
- * kickoff (captura tardia y opcional).
+ * Onboarding de 3 pasos, bilingue via el store. Se marca como visto en
+ * localStorage; sin captura de email por decision del kickoff (captura
+ * tardia y opcional; hoy no hay adonde llevarla).
  */
 export function Onboarding() {
+  const idioma = useProyecto((s) => s.idioma);
   const [visible, setVisible] = useState(false);
   const [paso, setPaso] = useState(0);
+  const t = UI[idioma];
+
+  const PASOS = [
+    { titulo: t.agregarEquipos, texto: t.agregarEquiposDesc },
+    { titulo: t.listaSeArma, texto: t.listaSeArmaDesc },
+    { titulo: t.compartilo, texto: t.compartiloDesc },
+  ];
 
   useEffect(() => {
     try {
       if (!localStorage.getItem(CLAVE)) setVisible(true);
     } catch {
-      // localStorage bloqueado (Safari privado): mostramos igual, sin persistir.
       setVisible(true);
     }
   }, []);
@@ -56,23 +42,23 @@ export function Onboarding() {
   const ultimo = paso === PASOS.length - 1;
 
   return (
-    <div className="ma-onboarding" role="dialog" aria-modal="true" aria-label={actual.titulo}>
-      <div className="ma-onboarding__caja">
-        <p className="ma-onboarding__contador ma-dato">
+    <div className="ma-modal" role="dialog" aria-modal="true" aria-label={actual.titulo}>
+      <div className="ma-modal__caja">
+        <p className="ma-modal__contador ma-dato">
           {paso + 1} / {PASOS.length}
         </p>
         <h2>{actual.titulo}</h2>
         <p>{actual.texto}</p>
-        <div className="ma-onboarding__acciones">
+        <div className="ma-modal__acciones">
           <button type="button" className="ma-boton ma-boton--secundario" onClick={cerrar}>
-            Saltar
+            {t.saltar}
           </button>
           <button
             type="button"
             className="ma-boton"
             onClick={() => (ultimo ? cerrar() : setPaso(paso + 1))}
           >
-            {ultimo ? 'Empezar' : 'Siguiente'}
+            {ultimo ? t.empezar : t.siguiente}
           </button>
         </div>
       </div>

@@ -13,16 +13,25 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import type { CanalDerivado, Proyecto } from '@/store/proyecto';
+import type { Idioma } from '@/i18n/idioma';
+import { UI } from '@/i18n/idioma';
 
 interface Opciones {
   proyecto: Proyecto;
   canales: readonly CanalDerivado[];
   /** Elemento DOM del lienzo a rasterizar. */
   lienzo: HTMLElement;
+  idioma: Idioma;
 }
 
 /** Devuelve el Blob del PDF listo para descarga o Web Share. */
-export async function generarPdf({ proyecto, canales, lienzo }: Opciones): Promise<Blob> {
+export async function generarPdf({
+  proyecto,
+  canales,
+  lienzo,
+  idioma,
+}: Opciones): Promise<Blob> {
+  const t = UI[idioma];
   const canvas = await html2canvas(lienzo, {
     backgroundColor: '#ffffff',
     // scale 1.5 en JPEG rinde ~300 dpi efectivos sobre A4 apaisado y baja el
@@ -48,8 +57,10 @@ export async function generarPdf({ proyecto, canales, lienzo }: Opciones): Promi
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(9);
   pdf.setTextColor(90);
-  const fecha = new Date(proyecto.modificado).toLocaleDateString('es-AR');
-  pdf.text(`Stage plot - actualizado ${fecha}`, margen, margen + 10);
+  const localeFecha = idioma === 'es' ? 'es-AR' : 'en-US';
+  const fecha = new Date(proyecto.modificado).toLocaleDateString(localeFecha);
+  const etiqueta = idioma === 'es' ? 'Stage plot - actualizado' : 'Stage plot - updated';
+  pdf.text(`${etiqueta} ${fecha}`, margen, margen + 10);
   pdf.setTextColor(0);
 
   // El lienzo tiene ratio 1000/625 = 1.6, mantener proporciones.
@@ -77,7 +88,8 @@ export async function generarPdf({ proyecto, canales, lienzo }: Opciones): Promi
 
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(14);
-    pdf.text('Lista de canales', margen, margen + 4);
+    const titulo = idioma === 'es' ? 'Lista de canales' : 'Channel list';
+    pdf.text(titulo, margen, margen + 4);
 
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(10);
@@ -88,8 +100,8 @@ export async function generarPdf({ proyecto, canales, lienzo }: Opciones): Promi
     pdf.rect(margen, cabezal, anchoP - margen * 2, 8, 'F');
     pdf.setFont('helvetica', 'bold');
     pdf.text('#', margen + 2, cabezal + 6);
-    pdf.text('Canal', margen + 18, cabezal + 6);
-    pdf.text('Senal', margen + 105, cabezal + 6);
+    pdf.text(t.canales, margen + 18, cabezal + 6);
+    pdf.text(t.senal, margen + 105, cabezal + 6);
     pdf.text('+48V', margen + 150, cabezal + 6);
     pdf.setFont('helvetica', 'normal');
 
@@ -101,8 +113,8 @@ export async function generarPdf({ proyecto, canales, lienzo }: Opciones): Promi
       }
       pdf.text(String(canal.numero), margen + 2, y);
       pdf.text(canal.nombre, margen + 18, y);
-      pdf.text(traducirSenal(canal.senal), margen + 105, y);
-      if (canal.phantom) pdf.text('Si', margen + 150, y);
+      pdf.text(t.senales[canal.senal], margen + 105, y);
+      if (canal.phantom) pdf.text(idioma === 'es' ? 'Si' : 'Yes', margen + 150, y);
       y += 7;
       pdf.setDrawColor(230);
       pdf.line(margen, y - 3, anchoP - margen, y - 3);
@@ -110,19 +122,6 @@ export async function generarPdf({ proyecto, canales, lienzo }: Opciones): Promi
   }
 
   return pdf.output('blob');
-}
-
-function traducirSenal(s: CanalDerivado['senal']): string {
-  switch (s) {
-    case 'linea':
-      return 'Linea';
-    case 'micro':
-      return 'Microfono';
-    case 'inalambrico':
-      return 'Inalambrico';
-    case 'monitor':
-      return 'Monitor';
-  }
 }
 
 /** Descarga el Blob con un nombre razonable. */

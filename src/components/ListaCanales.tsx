@@ -1,22 +1,16 @@
 import { useMemo } from 'react';
 import { derivarCanales, useProyecto } from '@/store/proyecto';
+import { UI } from '@/i18n/idioma';
 
-/**
- * Tabla de canales derivada del proyecto. Se actualiza sola con cada cambio
- * en `instrumentos`. Un click en una fila selecciona el instrumento en el
- * lienzo, para editar la etiqueta desde ahi.
- */
 export function ListaCanales() {
   const instrumentos = useProyecto((s) => s.proyecto.instrumentos);
+  const idioma = useProyecto((s) => s.idioma);
   const seleccionar = useProyecto((s) => s.seleccionar);
-  const canales = useMemo(() => derivarCanales(instrumentos), [instrumentos]);
+  const canales = useMemo(() => derivarCanales(instrumentos, idioma), [instrumentos, idioma]);
+  const t = UI[idioma];
 
   if (canales.length === 0) {
-    return (
-      <div className="ma-canales ma-canales--vacio">
-        Todavia no hay canales. Agrega equipos al lienzo.
-      </div>
-    );
+    return <div className="ma-canales ma-canales--vacio">{t.sinCanales}</div>;
   }
 
   return (
@@ -24,9 +18,9 @@ export function ListaCanales() {
       <thead>
         <tr>
           <th>#</th>
-          <th>Canal</th>
-          <th>Senal</th>
-          <th>+48V</th>
+          <th>{t.canales}</th>
+          <th>{t.senal}</th>
+          <th>{t.phantom}</th>
         </tr>
       </thead>
       <tbody>
@@ -37,24 +31,11 @@ export function ListaCanales() {
           >
             <td className="ma-dato">{c.numero}</td>
             <td>{c.nombre}</td>
-            <td>{traducir(c.senal)}</td>
-            <td>{c.phantom ? 'Si' : ''}</td>
+            <td>{t.senales[c.senal]}</td>
+            <td>{c.phantom ? (idioma === 'es' ? 'Si' : 'Yes') : ''}</td>
           </tr>
         ))}
       </tbody>
     </table>
   );
-}
-
-function traducir(s: 'linea' | 'micro' | 'inalambrico' | 'monitor'): string {
-  switch (s) {
-    case 'linea':
-      return 'Linea';
-    case 'micro':
-      return 'Microfono';
-    case 'inalambrico':
-      return 'Inalambrico';
-    case 'monitor':
-      return 'Monitor';
-  }
 }

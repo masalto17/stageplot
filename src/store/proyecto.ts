@@ -25,6 +25,8 @@ import { temporal } from 'zundo';
 import type { TemporalState } from 'zundo';
 import { useStore } from 'zustand';
 import { EQUIPOS_POR_ID, type CanalPlantilla } from '@/icons/catalog';
+import type { Idioma } from '@/i18n/idioma';
+import { idiomaInicial, guardarIdioma } from '@/i18n/idioma';
 
 export interface Instrumento {
   /** id de instancia (uuid). No confundir con `equipoId` del catalogo. */
@@ -51,6 +53,11 @@ export const LIENZO = { ancho: 1000, alto: 625 } as const;
 
 interface EstadoUI {
   seleccionadoId: string | null;
+  idioma: Idioma;
+  /** Ajustar a grilla (10 unidades del viewBox) al soltar el arrastre. */
+  ajusteGrilla: boolean;
+  /** Zoom del lienzo (1 = 100%). */
+  zoom: number;
 }
 
 export interface EstadoProyecto extends EstadoUI {
@@ -67,6 +74,16 @@ export interface EstadoProyecto extends EstadoUI {
   cargarProyecto: (proyecto: Proyecto) => void;
   renombrar: (nombre: string) => void;
   reiniciar: () => void;
+  setIdioma: (idioma: Idioma) => void;
+  setAjusteGrilla: (v: boolean) => void;
+  setZoom: (v: number) => void;
+}
+
+/** Tamano de la grilla (en unidades del viewBox). */
+export const GRILLA = 10;
+
+export function ajustarAGrilla(v: number, activo: boolean): number {
+  return activo ? Math.round(v / GRILLA) * GRILLA : v;
 }
 
 /** id estable para instrumentos. `crypto.randomUUID` esta en toda navegador PWA. */
@@ -95,6 +112,9 @@ export const useProyecto = create<EstadoProyecto>()(
     (set) => ({
       proyecto: proyectoVacio(),
       seleccionadoId: null,
+      idioma: typeof window === 'undefined' ? 'es' : idiomaInicial(),
+      ajusteGrilla: true,
+      zoom: 1,
 
       agregarInstrumento(equipoId, x, y) {
         // Falla temprano: un id de equipo caido es un bug, no dato de usuario.
@@ -247,6 +267,20 @@ export const useProyecto = create<EstadoProyecto>()(
       reiniciar() {
         set({ proyecto: proyectoVacio(), seleccionadoId: null });
       },
+
+      setIdioma(idioma) {
+        guardarIdioma(idioma);
+        set({ idioma });
+      },
+
+      setAjusteGrilla(v) {
+        set({ ajusteGrilla: v });
+      },
+
+      setZoom(v) {
+        // Clamp del zoom: 40% - 200%.
+        set({ zoom: Math.max(0.4, Math.min(2, v)) });
+      },
     }),
     {
       // Undo solo del proyecto: la seleccion es UI transitoria.
@@ -287,7 +321,10 @@ export interface CanalDerivado {
   instrumentoId: string;
 }
 
-export function derivarCanales(instrumentos: readonly Instrumento[]): CanalDerivado[] {
+export function derivarCanales(
+  instrumentos: readonly Instrumento[],
+  idioma: Idioma = 'es',
+): CanalDerivado[] {
   const canales: CanalDerivado[] = [];
   for (const inst of instrumentos) {
     const equipo = EQUIPOS_POR_ID.get(inst.equipoId);
@@ -297,9 +334,10 @@ export function derivarCanales(instrumentos: readonly Instrumento[]): CanalDeriv
     // canales, la etiqueta prefija ("Kbd L", "Kbd R" -> "Rhodes L", "Rhodes R").
     const soloUno = equipo.canales.length === 1;
     for (const canal of equipo.canales) {
-      let nombre = canal.nombre;
+      const nombreBase = canal.nombre[idioma];
+      let nombre = nombreBase;
       if (inst.etiqueta) {
-        nombre = soloUno ? inst.etiqueta : `${inst.etiqueta} ${canal.nombre}`;
+        nombre = soloUno ? inst.etiqueta : `${inst.etiqueta} ${nombreBase}`;
       }
       canales.push({
         numero: canales.length + 1,
