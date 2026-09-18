@@ -3,12 +3,10 @@ import {
   useProyecto,
   useTemporal,
   derivarCanales,
-  type Proyecto,
 } from '@/store/proyecto';
 import { compartir, abrirWhatsApp } from '@/lib/compartir';
-import { limpiarPersistencia } from '@/store/persistencia';
-import { plantillaBanda, plantillaPorSlug, SLUGS_PLANTILLA } from '@/lib/plantilla';
 import { UI, type Idioma } from '@/i18n/idioma';
+import { ModalProyectos } from './ModalProyectos';
 
 interface Props {
   lienzoRef: React.RefObject<HTMLElement | null>;
@@ -17,18 +15,14 @@ interface Props {
 /**
  * Barra superior:
  *  - Toggle bilingue ES/EN (persiste en localStorage).
- *  - Nombre editable del proyecto.
+ *  - Nombre editable del proyecto activo.
  *  - Undo / Redo.
- *  - Nuevo: abre modal para elegir en blanco o una plantilla (el bug B3 era
- *    que "Nuevo" cargaba siempre la plantilla banda; ahora es una eleccion
- *    explicita, con vacio como opcion natural).
- *  - PDF (descarga) y Compartir (Web Share con fallback WhatsApp).
+ *  - Proyectos: abre la biblioteca (lista guardada + nuevo + compartir link).
+ *  - PDF y Compartir (Web Share con fallback WhatsApp) del proyecto activo.
  */
 export function BarraSuperior({ lienzoRef }: Props) {
   const nombre = useProyecto((s) => s.proyecto.nombre);
   const renombrar = useProyecto((s) => s.renombrar);
-  const cargar = useProyecto((s) => s.cargarProyecto);
-  const reiniciar = useProyecto((s) => s.reiniciar);
   const idioma = useProyecto((s) => s.idioma);
   const setIdioma = useProyecto((s) => s.setIdioma);
 
@@ -38,7 +32,7 @@ export function BarraSuperior({ lienzoRef }: Props) {
   const puedeRedo = useTemporal((t) => t.futureStates.length > 0);
 
   const [ocupado, setOcupado] = useState<null | 'pdf' | 'share'>(null);
-  const [nuevoAbierto, setNuevoAbierto] = useState(false);
+  const [modalAbierto, setModalAbierto] = useState(false);
   const t = UI[idioma];
 
   const generar = async () => {
@@ -85,13 +79,6 @@ export function BarraSuperior({ lienzoRef }: Props) {
     } finally {
       setOcupado(null);
     }
-  };
-
-  const empezarNuevo = async (proyecto: Proyecto | null) => {
-    await limpiarPersistencia();
-    if (proyecto) cargar(proyecto);
-    else reiniciar();
-    setNuevoAbierto(false);
   };
 
   return (
@@ -142,9 +129,9 @@ export function BarraSuperior({ lienzoRef }: Props) {
           <button
             type="button"
             className="ma-boton ma-boton--secundario"
-            onClick={() => setNuevoAbierto(true)}
+            onClick={() => setModalAbierto(true)}
           >
-            {t.nuevo}
+            {t.proyectos}
           </button>
           <button
             type="button"
@@ -165,12 +152,8 @@ export function BarraSuperior({ lienzoRef }: Props) {
         </div>
       </div>
 
-      {nuevoAbierto && (
-        <ModalNuevo
-          idioma={idioma}
-          onCerrar={() => setNuevoAbierto(false)}
-          onElegir={empezarNuevo}
-        />
+      {modalAbierto && (
+        <ModalProyectos idioma={idioma} onCerrar={() => setModalAbierto(false)} />
       )}
     </>
   );
@@ -178,69 +161,4 @@ export function BarraSuperior({ lienzoRef }: Props) {
 
 function slugify(s: string): string {
   return (s || 'stageplot').toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'stageplot';
-}
-
-const NOMBRES_PLANTILLA: Record<string, { es: string; en: string }> = {
-  rock: { es: 'Banda de rock', en: 'Rock band' },
-  solista: { es: 'Solista con guitarra', en: 'Solo w/ guitar' },
-  dj: { es: 'Set de DJ', en: 'DJ set' },
-  folklore: { es: 'Folklore', en: 'Folk' },
-};
-
-interface PropsModal {
-  idioma: Idioma;
-  onCerrar: () => void;
-  onElegir: (p: Proyecto | null) => void;
-}
-
-/**
- * Modal "Nuevo": lienzo vacio o una de las plantillas por genero. Antes,
- * "Nuevo" cargaba silenciosamente la plantilla banda (bug: quedaba igual).
- */
-function ModalNuevo({ idioma, onCerrar, onElegir }: PropsModal) {
-  const t = UI[idioma];
-  return (
-    <div
-      className="ma-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-label={t.nuevoTitulo}
-      onClick={onCerrar}
-    >
-      <div className="ma-modal__caja" onClick={(e) => e.stopPropagation()}>
-        <h2>{t.nuevoTitulo}</h2>
-        <div className="ma-modal__opciones">
-          <button
-            type="button"
-            className="ma-modal__opc"
-            onClick={() => onElegir(null)}
-          >
-            <strong>{t.nuevoVacio}</strong>
-            <span>{t.nuevoDescripcionVacio}</span>
-          </button>
-          {SLUGS_PLANTILLA.map((slug) => {
-            const proyecto = slug === 'rock' ? plantillaBanda() : plantillaPorSlug(slug);
-            if (!proyecto) return null;
-            const nombres = NOMBRES_PLANTILLA[slug] ?? { es: slug, en: slug };
-            return (
-              <button
-                key={slug}
-                type="button"
-                className="ma-modal__opc"
-                onClick={() => onElegir(proyecto)}
-              >
-                <strong>{nombres[idioma]}</strong>
-                <span>{proyecto.instrumentos.length} equipos</span>
-              </button>
-            );
-          })}
-        </div>
-        <div className="ma-modal__acciones">
-          <button type="button" className="ma-boton ma-boton--secundario" onClick={onCerrar}>
-            {t.cancelar}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 }

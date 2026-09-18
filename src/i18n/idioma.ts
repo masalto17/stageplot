@@ -25,6 +25,20 @@ export function guardarIdioma(idioma: Idioma): void {
 
 /** Copy de UI que si o si necesita traduccion. */
 interface Copy {
+  proyectos: string;
+  proyectosTitulo: string;
+  proyectoActual: string;
+  abrirProyecto: string;
+  duplicarProyecto: string;
+  borrarProyecto: string;
+  borrarConfirm: string;
+  copiarLink: string;
+  linkCopiado: string;
+  linkNoCopio: string;
+  linkAdvertenciaFondo: string;
+  compartirLink: string;
+  proyectoImportado: string;
+  sinProyectos: string;
   fuente: string;
   stand: string;
   fase: string;
@@ -85,6 +99,20 @@ interface Copy {
 
 export const UI: Record<Idioma, Copy> = {
   es: {
+    proyectos: 'Proyectos',
+    proyectosTitulo: 'Tus proyectos',
+    proyectoActual: 'En edicion',
+    abrirProyecto: 'Abrir',
+    duplicarProyecto: 'Duplicar',
+    borrarProyecto: 'Borrar',
+    borrarConfirm: 'Borrar este proyecto? No se puede deshacer.',
+    copiarLink: 'Copiar link',
+    linkCopiado: 'Link copiado.',
+    linkNoCopio: 'No pude copiar. Copialo a mano.',
+    linkAdvertenciaFondo: 'El fondo del venue no viaja en el link (muy pesado).',
+    compartirLink: 'Compartir link',
+    proyectoImportado: 'Proyecto importado desde link.',
+    sinProyectos: 'Todavia no hay proyectos guardados.',
     fuente: 'Mic / DI',
     stand: 'Pedestal',
     fase: 'Fase',
@@ -164,6 +192,20 @@ export const UI: Record<Idioma, Copy> = {
     },
   },
   en: {
+    proyectos: 'Projects',
+    proyectosTitulo: 'Your projects',
+    proyectoActual: 'Editing now',
+    abrirProyecto: 'Open',
+    duplicarProyecto: 'Duplicate',
+    borrarProyecto: 'Delete',
+    borrarConfirm: 'Delete this project? This cannot be undone.',
+    copiarLink: 'Copy link',
+    linkCopiado: 'Link copied.',
+    linkNoCopio: 'Copy failed. Grab it manually.',
+    linkAdvertenciaFondo: 'The venue background is not shared in the link (too heavy).',
+    compartirLink: 'Share link',
+    proyectoImportado: 'Project imported from link.',
+    sinProyectos: 'No saved projects yet.',
     fuente: 'Mic / DI',
     stand: 'Stand',
     fase: 'Ø',

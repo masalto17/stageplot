@@ -9,6 +9,8 @@ import { ControlesLienzo } from './ControlesLienzo';
 import { hidratarProyecto, iniciarAutoguardado } from '@/store/persistencia';
 import { useProyecto } from '@/store/proyecto';
 import { plantillaBanda, plantillaPorSlug } from '@/lib/plantilla';
+import { decodificarProyecto, reidentificar } from '@/lib/compartirLink';
+import { guardarProyectoNuevo } from '@/store/persistencia';
 import { useAtajos } from '@/hooks/useAtajos';
 import { UI } from '@/i18n/idioma';
 
@@ -30,18 +32,27 @@ export default function StagePlotApp() {
   useEffect(() => {
     let desuscribir: (() => void) | undefined;
     (async () => {
-      const hashPlantilla = leerHashPlantilla();
-      if (hashPlantilla) {
-        const proyecto = plantillaPorSlug(hashPlantilla);
-        if (proyecto) cargar(proyecto);
-        else {
+      // Prioridad: link compartido > slug plantilla > proyecto persistido.
+      // El link se importa como PROYECTO NUEVO, con ids frescos: no
+      // sobreescribe lo que el receptor tenia guardado.
+      const proyectoDelLink = leerProyectoDelLink();
+      if (proyectoDelLink) {
+        await guardarProyectoNuevo(reidentificar(proyectoDelLink));
+        history.replaceState(null, '', location.pathname);
+      } else {
+        const hashPlantilla = leerHashPlantilla();
+        if (hashPlantilla) {
+          const proyecto = plantillaPorSlug(hashPlantilla);
+          if (proyecto) cargar(proyecto);
+          else {
+            const habia = await hidratarProyecto();
+            if (!habia) cargar(plantillaBanda());
+          }
+          history.replaceState(null, '', location.pathname);
+        } else {
           const habia = await hidratarProyecto();
           if (!habia) cargar(plantillaBanda());
         }
-        history.replaceState(null, '', location.pathname);
-      } else {
-        const habia = await hidratarProyecto();
-        if (!habia) cargar(plantillaBanda());
       }
       desuscribir = iniciarAutoguardado();
       setListo(true);
@@ -128,4 +139,10 @@ function leerHashPlantilla(): string | null {
   if (!hash) return null;
   const params = new URLSearchParams(hash);
   return params.get('p');
+}
+
+/** Decodifica un proyecto de `#e=<base64>` si existe. */
+function leerProyectoDelLink() {
+  if (typeof location === 'undefined') return null;
+  return decodificarProyecto(location.hash);
 }
