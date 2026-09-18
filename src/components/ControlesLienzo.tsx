@@ -1,30 +1,82 @@
-import { useProyecto } from '@/store/proyecto';
+import { useRef, useState } from 'react';
+import { useProyecto, type ResolucionGrilla } from '@/store/proyecto';
 import { UI } from '@/i18n/idioma';
+import { importarImagen, PESO_MAX_KB } from '@/lib/imagenFondo';
 
 /**
- * Barra flotante sobre el lienzo: zoom in/out/reset y toggle de grilla.
- * Se ubica pegada al borde superior derecho del panel del lienzo.
+ * Barra flotante sobre el lienzo:
+ *  - selector de grilla (off / fina / media / gruesa);
+ *  - zoom in / reset / out;
+ *  - importar imagen de fondo del venue;
+ *  - control de opacidad del fondo cuando esta activo, con boton para quitar.
+ *
+ * El fondo se guarda dentro del proyecto (`proyecto.fondo`) y persiste con
+ * Dexie: al volver a abrir la app el fondo esta ahi.
  */
 export function ControlesLienzo() {
   const idioma = useProyecto((s) => s.idioma);
   const zoom = useProyecto((s) => s.zoom);
   const setZoom = useProyecto((s) => s.setZoom);
-  const grilla = useProyecto((s) => s.ajusteGrilla);
-  const setGrilla = useProyecto((s) => s.setAjusteGrilla);
+  const grilla = useProyecto((s) => s.grilla);
+  const setGrilla = useProyecto((s) => s.setGrilla);
+  const fondo = useProyecto((s) => s.proyecto.fondo);
+  const setFondo = useProyecto((s) => s.setFondo);
+  const setOpacidadFondo = useProyecto((s) => s.setOpacidadFondo);
+
+  const inputArchivo = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [subiendo, setSubiendo] = useState(false);
   const t = UI[idioma];
+
+  const cambiarArchivo = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = ''; // permitir re-importar el mismo archivo.
+    if (!file) return;
+    setError(null);
+    setSubiendo(true);
+    try {
+      const { dataUrl, ancho, alto, pesoKb } = await importarImagen(file);
+      if (pesoKb > PESO_MAX_KB) {
+        setError(
+          idioma === 'es'
+            ? `Imagen pesada (${pesoKb} kB). Se cargo, pero puede lentificar la app.`
+            : `Heavy image (${pesoKb} kB). Loaded, but the app may slow down.`,
+        );
+      }
+      setFondo({ dataUrl, ancho, alto, opacidad: 0.4 });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSubiendo(false);
+    }
+  };
+
+  const OPCIONES_GRILLA: readonly { valor: ResolucionGrilla; etiqueta: string }[] = [
+    { valor: 'off', etiqueta: idioma === 'es' ? 'Off' : 'Off' },
+    { valor: 'fina', etiqueta: idioma === 'es' ? 'Fina' : 'Fine' },
+    { valor: 'media', etiqueta: idioma === 'es' ? 'Media' : 'Medium' },
+    { valor: 'gruesa', etiqueta: idioma === 'es' ? 'Gruesa' : 'Coarse' },
+  ];
 
   return (
     <div className="ma-controles" role="toolbar" aria-label="Controles del lienzo">
-      <button
-        type="button"
-        className={`ma-controles__opc${grilla ? ' ma-controles__opc--activo' : ''}`}
-        onClick={() => setGrilla(!grilla)}
-        aria-pressed={grilla}
-        title={grilla ? t.grillaOn : t.grillaOff}
-      >
-        {grilla ? '#' : '#'}
-      </button>
-      <div className="ma-controles__zoom">
+      <div className="ma-controles__grupo">
+        <span className="ma-controles__label">{t.grillaOn}</span>
+        <select
+          className="ma-controles__select"
+          value={grilla}
+          onChange={(e) => setGrilla(e.target.value as ResolucionGrilla)}
+          aria-label={t.grillaOn}
+        >
+          {OPCIONES_GRILLA.map((o) => (
+            <option key={o.valor} value={o.valor}>
+              {o.etiqueta}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="ma-controles__grupo">
         <button
           type="button"
           className="ma-controles__opc"
@@ -52,6 +104,56 @@ export function ControlesLienzo() {
           +
         </button>
       </div>
+
+      <div className="ma-controles__grupo">
+        <input
+          ref={inputArchivo}
+          type="file"
+          accept="image/*"
+          onChange={cambiarArchivo}
+          style={{ display: 'none' }}
+        />
+        <button
+          type="button"
+          className={`ma-controles__opc${fondo ? ' ma-controles__opc--activo' : ''}`}
+          onClick={() => inputArchivo.current?.click()}
+          disabled={subiendo}
+          title={idioma === 'es' ? 'Importar fondo del venue' : 'Import venue background'}
+        >
+          {subiendo
+            ? (idioma === 'es' ? 'Cargando...' : 'Loading...')
+            : (idioma === 'es' ? 'Fondo' : 'Background')}
+        </button>
+        {fondo && (
+          <>
+            <input
+              type="range"
+              min={5}
+              max={100}
+              value={Math.round(fondo.opacidad * 100)}
+              onChange={(e) => setOpacidadFondo(Number(e.target.value) / 100)}
+              className="ma-controles__slider"
+              aria-label={idioma === 'es' ? 'Opacidad del fondo' : 'Background opacity'}
+              title={`${Math.round(fondo.opacidad * 100)}%`}
+            />
+            <button
+              type="button"
+              className="ma-controles__opc"
+              onClick={() => setFondo(null)}
+              title={idioma === 'es' ? 'Quitar fondo' : 'Remove background'}
+              aria-label={idioma === 'es' ? 'Quitar fondo' : 'Remove background'}
+            >
+              x
+            </button>
+          </>
+        )}
+      </div>
+
+      {error && (
+        <p className="ma-controles__error" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

@@ -40,22 +40,44 @@ export interface Instrumento {
   etiqueta?: string;
 }
 
+/**
+ * Imagen de fondo del venue (plano, foto de la sala, boceto). Se guarda
+ * embebida como dataURL para simplificar la persistencia y viajar con el
+ * proyecto. La compresion la hace `importarImagen()` antes de llegar aca.
+ */
+export interface Fondo {
+  dataUrl: string;
+  ancho: number;
+  alto: number;
+  /** 0.05 - 1. Un plano tecnico se ve mejor bajito (~0.35). */
+  opacidad: number;
+}
+
 export interface Proyecto {
   id: string;
   nombre: string;
   creado: number;
   modificado: number;
   instrumentos: Instrumento[];
+  fondo?: Fondo;
 }
 
 /** Dimensiones del lienzo en unidades internas. */
 export const LIENZO = { ancho: 1000, alto: 625 } as const;
 
+/** Resolucion de la grilla de ajuste (en unidades del viewBox). */
+export type ResolucionGrilla = 'off' | 'fina' | 'media' | 'gruesa';
+export const PASO_GRILLA: Record<ResolucionGrilla, number> = {
+  off: 0,
+  fina: 5,
+  media: 10,
+  gruesa: 25,
+};
+
 interface EstadoUI {
   seleccionadoId: string | null;
   idioma: Idioma;
-  /** Ajustar a grilla (10 unidades del viewBox) al soltar el arrastre. */
-  ajusteGrilla: boolean;
+  grilla: ResolucionGrilla;
   /** Zoom del lienzo (1 = 100%). */
   zoom: number;
 }
@@ -75,15 +97,15 @@ export interface EstadoProyecto extends EstadoUI {
   renombrar: (nombre: string) => void;
   reiniciar: () => void;
   setIdioma: (idioma: Idioma) => void;
-  setAjusteGrilla: (v: boolean) => void;
+  setGrilla: (v: ResolucionGrilla) => void;
   setZoom: (v: number) => void;
+  setFondo: (fondo: Fondo | null) => void;
+  setOpacidadFondo: (opacidad: number) => void;
 }
 
-/** Tamano de la grilla (en unidades del viewBox). */
-export const GRILLA = 10;
-
-export function ajustarAGrilla(v: number, activo: boolean): number {
-  return activo ? Math.round(v / GRILLA) * GRILLA : v;
+export function ajustarAGrilla(v: number, resolucion: ResolucionGrilla): number {
+  const paso = PASO_GRILLA[resolucion];
+  return paso > 0 ? Math.round(v / paso) * paso : v;
 }
 
 /** id estable para instrumentos. `crypto.randomUUID` esta en toda navegador PWA. */
@@ -113,7 +135,7 @@ export const useProyecto = create<EstadoProyecto>()(
       proyecto: proyectoVacio(),
       seleccionadoId: null,
       idioma: typeof window === 'undefined' ? 'es' : idiomaInicial(),
-      ajusteGrilla: true,
+      grilla: 'media',
       zoom: 1,
 
       agregarInstrumento(equipoId, x, y) {
@@ -273,13 +295,39 @@ export const useProyecto = create<EstadoProyecto>()(
         set({ idioma });
       },
 
-      setAjusteGrilla(v) {
-        set({ ajusteGrilla: v });
+      setGrilla(v) {
+        set({ grilla: v });
       },
 
       setZoom(v) {
         // Clamp del zoom: 40% - 200%.
         set({ zoom: Math.max(0.4, Math.min(2, v)) });
+      },
+
+      setFondo(fondo) {
+        set((s) => ({
+          proyecto: {
+            ...s.proyecto,
+            fondo: fondo ?? undefined,
+            modificado: Date.now(),
+          },
+        }));
+      },
+
+      setOpacidadFondo(opacidad) {
+        set((s) => {
+          if (!s.proyecto.fondo) return s;
+          return {
+            proyecto: {
+              ...s.proyecto,
+              fondo: {
+                ...s.proyecto.fondo,
+                opacidad: Math.max(0.05, Math.min(1, opacidad)),
+              },
+              modificado: Date.now(),
+            },
+          };
+        });
       },
     }),
     {

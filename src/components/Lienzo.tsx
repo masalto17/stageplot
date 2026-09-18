@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactElement } from 'react';
 import interact from 'interactjs';
 import { EQUIPOS_POR_ID } from '@/icons/catalog';
 import { IconoEquipo } from './IconoEquipo';
@@ -6,25 +6,29 @@ import {
   useProyecto,
   LIENZO,
   ajustarAGrilla,
-  GRILLA,
+  PASO_GRILLA,
   type Instrumento,
+  type ResolucionGrilla,
 } from '@/store/proyecto';
 import { UI } from '@/i18n/idioma';
 
 /**
  * Lienzo del stage plot.
  *
- * Ratio fijo 1000x625. El SVG de fondo mantiene proporciones via CSS. Los
- * instrumentos se posicionan en % del contenedor: el mismo proyecto se ve
- * identico en cualquier pantalla y el zoom del container los escala en bloque.
+ * Ratio fijo 1000x625. Los instrumentos se posicionan en % del contenedor:
+ * el mismo proyecto se ve identico en cualquier pantalla y el zoom del
+ * contenedor los escala en bloque.
  *
  * Interaccion:
- *  - Un click/tap sobre un instrumento lo selecciona (via onClick del div, que
- *    no dispara si hubo movimiento del puntero).
- *  - Drag sobre un instrumento lo mueve. interact.js delega escuchando en el
- *    contenedor (`context: raiz`), asi que NO hay que llamar stopPropagation
- *    en el div del instrumento - eso mataba la delegacion en la version B2.
- *  - Al soltar (`end`) se ajusta a la grilla si el modo esta activo.
+ *  - Click/tap sobre un instrumento lo selecciona (via `onClick`).
+ *  - Drag lo mueve. interact.js delega en el contenedor (`context: raiz`),
+ *    asi que NO se llama `stopPropagation` en el div del instrumento.
+ *  - Al soltar (`end`) se ajusta a la grilla configurada si esta activa.
+ *
+ * Capas (de atras hacia adelante):
+ *  1. Fondo importado por el usuario (imagen del venue).
+ *  2. SVG con grilla, guias, wings y "FRENTE DEL ESCENARIO".
+ *  3. Instrumentos.
  */
 export function Lienzo() {
   const contenedor = useRef<HTMLDivElement>(null);
@@ -33,17 +37,14 @@ export function Lienzo() {
   const seleccionar = useProyecto((s) => s.seleccionar);
   const mover = useProyecto((s) => s.moverInstrumento);
   const idioma = useProyecto((s) => s.idioma);
-
   const zoom = useProyecto((s) => s.zoom);
+  const grilla = useProyecto((s) => s.grilla);
 
-  // Estado local por drag: bandera que evita seleccionar al final del drag
-  // (el click sintetico despues del pointerup, si no lo suprimimos, salta).
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
     const raiz = contenedor.current;
     if (!raiz) return;
-
     let arranco = false;
 
     const interactable = interact('.ma-lienzo__item', { context: raiz }).draggable({
@@ -60,7 +61,6 @@ export function Lienzo() {
           if (!id) return;
           arranco = true;
           setDragging(true);
-          // px del contenedor -> unidades de viewBox.
           const escalaX = LIENZO.ancho / raiz.clientWidth;
           const escalaY = LIENZO.alto / raiz.clientHeight;
           const inst = useProyecto
@@ -80,13 +80,11 @@ export function Lienzo() {
             .getState()
             .proyecto.instrumentos.find((i) => i.id === id);
           if (inst) {
-            const grilla = useProyecto.getState().ajusteGrilla;
-            const x = ajustarAGrilla(inst.x, grilla);
-            const y = ajustarAGrilla(inst.y, grilla);
+            const resolucion = useProyecto.getState().grilla;
+            const x = ajustarAGrilla(inst.x, resolucion);
+            const y = ajustarAGrilla(inst.y, resolucion);
             if (x !== inst.x || y !== inst.y) mover(id, x, y);
           }
-          // Damos un tick antes de bajar la bandera para que el click sintetico
-          // que sigue al pointerup no dispare seleccionar por accidente.
           setTimeout(() => setDragging(false), 0);
         },
       },
@@ -111,7 +109,17 @@ export function Lienzo() {
           if (e.target === e.currentTarget) seleccionar(null);
         }}
       >
-        <FondoEscenario idioma={idioma} />
+        {proyecto.fondo && (
+          <img
+            className="ma-lienzo__fondo-imagen"
+            src={proyecto.fondo.dataUrl}
+            alt=""
+            style={{ opacity: proyecto.fondo.opacidad }}
+            draggable={false}
+          />
+        )}
+
+        <FondoEscenario idioma={idioma} grilla={grilla} />
 
         {proyecto.instrumentos.map((inst) => (
           <InstrumentoLienzo
@@ -129,14 +137,20 @@ export function Lienzo() {
   );
 }
 
-/** Fondo del escenario: grilla suave, guias, wings y frente marcado. */
-function FondoEscenario({ idioma }: { idioma: 'es' | 'en' }) {
-  const activo = useProyecto((s) => s.ajusteGrilla);
-  const dots = [];
-  if (activo) {
-    for (let x = GRILLA; x < LIENZO.ancho; x += GRILLA * 2) {
-      for (let y = GRILLA; y < LIENZO.alto; y += GRILLA * 2) {
-        dots.push(<circle key={`${x}-${y}`} cx={x} cy={y} r={0.6} fill="rgba(0,0,0,0.16)" />);
+/** Grilla de puntos + wings + guias + frente marcado. */
+function FondoEscenario({ idioma, grilla }: { idioma: 'es' | 'en'; grilla: ResolucionGrilla }) {
+  const paso = PASO_GRILLA[grilla];
+  const dots: ReactElement[] = [];
+  if (paso > 0) {
+    // Los puntos son un indicio visual, no la resolucion real (que ya la
+    // marca `PASO_GRILLA` en el snap). Un punto cada 4 pasos evita que el
+    // lienzo se satura y deja los instrumentos como protagonistas.
+    const step = Math.max(paso * 4, 20);
+    for (let x = step; x < LIENZO.ancho; x += step) {
+      for (let y = step; y < LIENZO.alto; y += step) {
+        dots.push(
+          <circle key={`${x}-${y}`} cx={x} cy={y} r={0.6} fill="rgba(0,0,0,0.18)" />,
+        );
       }
     }
   }
@@ -147,12 +161,9 @@ function FondoEscenario({ idioma }: { idioma: 'es' | 'en' }) {
       preserveAspectRatio="none"
       aria-hidden="true"
     >
-      {/* Wings (laterales) suaves. */}
       <rect x={0} y={0} width={80} height={LIENZO.alto} fill="rgba(0,0,0,0.03)" />
       <rect x={LIENZO.ancho - 80} y={0} width={80} height={LIENZO.alto} fill="rgba(0,0,0,0.03)" />
-      {/* Grilla de puntos si el modo esta activo. */}
       {dots}
-      {/* Guias tercios. */}
       <line
         x1={LIENZO.ancho / 3} y1={0}
         x2={LIENZO.ancho / 3} y2={LIENZO.alto}
@@ -163,7 +174,6 @@ function FondoEscenario({ idioma }: { idioma: 'es' | 'en' }) {
         x2={(LIENZO.ancho * 2) / 3} y2={LIENZO.alto}
         stroke="rgba(0,0,0,0.06)" strokeWidth={1}
       />
-      {/* Frente del escenario. */}
       <line
         x1={40} y1={LIENZO.alto - 6}
         x2={LIENZO.ancho - 40} y2={LIENZO.alto - 6}

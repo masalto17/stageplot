@@ -732,3 +732,107 @@ button:focus-visible {
   .ma-barra__acciones { width: 100%; justify-content: flex-start; }
   .ma-editor { height: calc(100vh - 100px); }
 }
+
+/* ---------- Fondo importable + controles ampliados ---------- */
+
+.ma-lienzo__fondo-imagen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+.ma-lienzo__fondo,
+.ma-lienzo__item {
+  z-index: 1;
+}
+
+.ma-lienzo__item {
+  z-index: 2;
+}
+
+.ma-lienzo__item--sel {
+  z-index: 3;
+}
+
+.ma-controles {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border: 1px solid var(--ma-borde);
+  border-radius: var(--ma-radio-chico);
+  background: var(--ma-blanco);
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.ma-controles__grupo {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-right: 1px solid var(--ma-borde);
+  padding-right: 8px;
+  margin-right: 2px;
+}
+
+.ma-controles__grupo:last-child {
+  border-right: 0;
+  padding-right: 2px;
+  margin-right: 0;
+}
+
+.ma-controles__label {
+  font-size: 0.7rem;
+  color: var(--ma-texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.ma-controles__select {
+  padding: 4px 6px;
+  border: 1px solid var(--ma-borde);
+  border-radius: 6px;
+  background: var(--ma-blanco);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ma-texto);
+  cursor: pointer;
+}
+
+.ma-controles__slider {
+  width: 80px;
+  cursor: pointer;
+}
+
+.ma-controles__error {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(227, 6, 19, 0.08);
+  color: var(--ma-rojo);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* En mobile, la barra de controles baja al pie del panel para no romper. */
+@media (max-width: 900px) {
+  .ma-controles {
+    margin-left: 0;
+    width: 100%;
+    order: 5;
+  }
+  .ma-tabs {
+    flex-wrap: wrap;
+  }
+}
