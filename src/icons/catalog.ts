@@ -32,10 +32,25 @@ export interface TextoBilingue {
   en: string;
 }
 
+/**
+ * Tipo de pedestal / soporte para la captura.
+ *  - `recto`: pie recto, altura completa (voces, hi-hat).
+ *  - `boom`: pie con brazo largo (overheads, coros).
+ *  - `corto`: pie corto (bombo, ampli guitarra).
+ *  - `clip`: sujeto al aro / campana (toms, vientos).
+ *  - `suelo`: apoyado (cajon, ambient).
+ *  - `otro`: sin standard, ver nota.
+ */
+export type TipoStand = 'recto' | 'boom' | 'corto' | 'clip' | 'suelo' | 'otro';
+
 export interface CanalPlantilla {
   nombre: TextoBilingue;
   senal: 'linea' | 'micro' | 'inalambrico' | 'monitor';
   phantom?: boolean;
+  /** Modelo sugerido de mic o DI (SM57, Beta 52, DI activa, ...). */
+  micDefault?: string;
+  /** Tipo de pedestal sugerido. */
+  standDefault?: TipoStand;
 }
 
 export interface PathEquipo {
@@ -82,7 +97,7 @@ export const EQUIPOS: readonly Equipo[] = [
       linea(circ(50, 50, 27)),
       solido(circ(50, 50, 5)),
     ],
-    canales: [{ nombre: es_en('Bombo', 'Kick'), senal: 'micro' }],
+    canales: [{ nombre: es_en('Bombo', 'Kick'), senal: 'micro', micDefault: 'Beta 52 / D6', standDefault: 'corto' }],
   },
   {
     id: 'snare',
@@ -97,8 +112,8 @@ export const EQUIPOS: readonly Equipo[] = [
       linea('M 34 72 L 66 78 M 34 78 L 66 84 M 34 84 L 66 90'),
     ],
     canales: [
-      { nombre: es_en('Redoblante arriba', 'Snare top'), senal: 'micro' },
-      { nombre: es_en('Redoblante abajo', 'Snare bot'), senal: 'micro' },
+      { nombre: es_en('Redoblante arriba', 'Snare top'), senal: 'micro', micDefault: 'SM57', standDefault: 'corto' },
+      { nombre: es_en('Redoblante abajo', 'Snare bot'), senal: 'micro', micDefault: 'SM57', standDefault: 'corto' },
     ],
   },
   {
@@ -114,7 +129,7 @@ export const EQUIPOS: readonly Equipo[] = [
       linea('M 30 32 Q 50 22 70 32'),
     ],
     canales: [
-      { nombre: es_en('Hi-hat', 'Hi-hat'), senal: 'micro', phantom: true },
+      { nombre: es_en('Hi-hat', 'Hi-hat'), senal: 'micro', phantom: true, micDefault: 'SM81 / KM184', standDefault: 'boom' },
     ],
   },
   {
@@ -127,7 +142,7 @@ export const EQUIPOS: readonly Equipo[] = [
       linea(circ(50, 50, 16)),
       solido(circ(50, 50, 2)),
     ],
-    canales: [{ nombre: es_en('Tom', 'Tom'), senal: 'micro' }],
+    canales: [{ nombre: es_en('Tom', 'Tom'), senal: 'micro', micDefault: 'e604', standDefault: 'clip' }],
   },
   {
     id: 'floor',
@@ -141,7 +156,7 @@ export const EQUIPOS: readonly Equipo[] = [
       // Tres patas.
       linea('M 30 68 L 22 82 M 50 74 L 50 88 M 70 68 L 78 82'),
     ],
-    canales: [{ nombre: es_en('Tom de piso', 'Floor tom'), senal: 'micro' }],
+    canales: [{ nombre: es_en('Tom de piso', 'Floor tom'), senal: 'micro', micDefault: 'e604 / D2', standDefault: 'clip' }],
   },
   {
     id: 'overhead',
@@ -158,8 +173,8 @@ export const EQUIPOS: readonly Equipo[] = [
       linea('M 42 92 L 58 92'),
     ],
     canales: [
-      { nombre: es_en('OH L', 'OH L'), senal: 'micro', phantom: true },
-      { nombre: es_en('OH R', 'OH R'), senal: 'micro', phantom: true },
+      { nombre: es_en('OH L', 'OH L'), senal: 'micro', phantom: true, micDefault: 'KM184 / SM81', standDefault: 'boom' },
+      { nombre: es_en('OH R', 'OH R'), senal: 'micro', phantom: true, micDefault: 'KM184 / SM81', standDefault: 'boom' },
     ],
   },
   {
@@ -173,7 +188,7 @@ export const EQUIPOS: readonly Equipo[] = [
       linea(circ(50, 50, 14)),
       solido(circ(50, 50, 5)),
     ],
-    canales: [{ nombre: es_en('Ride', 'Ride'), senal: 'micro', phantom: true }],
+    canales: [{ nombre: es_en('Ride', 'Ride'), senal: 'micro', phantom: true, micDefault: 'SM81', standDefault: 'boom' }],
   },
   // ---------- Percusion ----------
   {
@@ -186,7 +201,7 @@ export const EQUIPOS: readonly Equipo[] = [
       linea('M 35 30 h 30 M 35 66 h 30'),
       solido(circ(50, 48, 2)),
     ],
-    canales: [{ nombre: es_en('Conga', 'Conga'), senal: 'micro' }],
+    canales: [{ nombre: es_en('Conga', 'Conga'), senal: 'micro', micDefault: 'SM57 / MD421', standDefault: 'boom' }],
   },
   {
     id: 'bongo',
@@ -200,7 +215,7 @@ export const EQUIPOS: readonly Equipo[] = [
       solido(circ(35, 50, 2)),
       solido(circ(65, 50, 2)),
     ],
-    canales: [{ nombre: es_en('Bongo', 'Bongo'), senal: 'micro' }],
+    canales: [{ nombre: es_en('Bongo', 'Bongo'), senal: 'micro', micDefault: 'SM57', standDefault: 'boom' }],
   },
   {
     id: 'cajon',
@@ -213,7 +228,7 @@ export const EQUIPOS: readonly Equipo[] = [
       // Marca de golpe superior.
       linea('M 34 30 h 32'),
     ],
-    canales: [{ nombre: es_en('Cajon', 'Cajon'), senal: 'micro' }],
+    canales: [{ nombre: es_en('Cajon', 'Cajon'), senal: 'micro', micDefault: 'Beta 52 + SM57', standDefault: 'suelo' }],
   },
   {
     id: 'timbal',
@@ -227,8 +242,8 @@ export const EQUIPOS: readonly Equipo[] = [
       linea('M 35 66 v 12 M 65 66 v 12'),
     ],
     canales: [
-      { nombre: es_en('Timbal L', 'Timbales L'), senal: 'micro' },
-      { nombre: es_en('Timbal R', 'Timbales R'), senal: 'micro' },
+      { nombre: es_en('Timbal L', 'Timbales L'), senal: 'micro', micDefault: 'SM57', standDefault: 'clip' },
+      { nombre: es_en('Timbal R', 'Timbales R'), senal: 'micro', micDefault: 'SM57', standDefault: 'clip' },
     ],
   },
   // ---------- Bajo ----------
@@ -250,7 +265,7 @@ export const EQUIPOS: readonly Equipo[] = [
       // LED.
       solido(circ(50, 60, 2)),
     ],
-    canales: [{ nombre: es_en('Bajo DI', 'Bass DI'), senal: 'linea' }],
+    canales: [{ nombre: es_en('Bajo DI', 'Bass DI'), senal: 'linea', micDefault: 'DI activa' }],
   },
   {
     id: 'bajo-amp',
@@ -271,7 +286,7 @@ export const EQUIPOS: readonly Equipo[] = [
       suave(circ(50, 58, 13)),
       solido(circ(50, 58, 4)),
     ],
-    canales: [{ nombre: es_en('Ampli bajo', 'Bass amp'), senal: 'micro' }],
+    canales: [{ nombre: es_en('Ampli bajo', 'Bass amp'), senal: 'micro', micDefault: 'Beta 52 / MD421', standDefault: 'corto' }],
   },
   // ---------- Guitarra ----------
   {
@@ -292,7 +307,7 @@ export const EQUIPOS: readonly Equipo[] = [
       suave(circ(50, 58, 12)),
       solido(circ(50, 58, 4)),
     ],
-    canales: [{ nombre: es_en('Guitarra', 'Guitar'), senal: 'micro' }],
+    canales: [{ nombre: es_en('Guitarra', 'Guitar'), senal: 'micro', micDefault: 'SM57 / MD421', standDefault: 'corto' }],
   },
   {
     id: 'gtr-acu',
@@ -309,7 +324,7 @@ export const EQUIPOS: readonly Equipo[] = [
       // Trastes en el mastil.
       linea('M 48 20 h 4'),
     ],
-    canales: [{ nombre: es_en('Acustica', 'Acoustic'), senal: 'linea' }],
+    canales: [{ nombre: es_en('Acustica', 'Acoustic'), senal: 'linea', micDefault: 'DI activa' }],
   },
   {
     id: 'gtr-pedal',
@@ -328,7 +343,7 @@ export const EQUIPOS: readonly Equipo[] = [
       linea(circ(72, 52, 5)),
       solido(circ(72, 52, 2)),
     ],
-    canales: [{ nombre: es_en('Guitarra', 'Guitar'), senal: 'linea' }],
+    canales: [{ nombre: es_en('Guitarra', 'Guitar'), senal: 'linea', micDefault: 'DI activa' }],
   },
   // ---------- Teclados ----------
   {
@@ -348,8 +363,8 @@ export const EQUIPOS: readonly Equipo[] = [
       solido(rectR(72, 38, 6, 16, 1)),
     ],
     canales: [
-      { nombre: es_en('Teclado L', 'Keys L'), senal: 'linea' },
-      { nombre: es_en('Teclado R', 'Keys R'), senal: 'linea' },
+      { nombre: es_en('Teclado L', 'Keys L'), senal: 'linea', micDefault: 'DI activa' },
+      { nombre: es_en('Teclado R', 'Keys R'), senal: 'linea', micDefault: 'DI activa' },
     ],
   },
   {
@@ -368,7 +383,7 @@ export const EQUIPOS: readonly Equipo[] = [
       solido(rectR(50, 42, 5, 14, 1)),
       solido(rectR(60, 42, 5, 14, 1)),
     ],
-    canales: [{ nombre: es_en('Synth', 'Synth'), senal: 'linea' }],
+    canales: [{ nombre: es_en('Synth', 'Synth'), senal: 'linea', micDefault: 'DI activa' }],
   },
   // ---------- Voz ----------
   {
@@ -387,7 +402,7 @@ export const EQUIPOS: readonly Equipo[] = [
       // Boton.
       solido(circ(50, 74, 2)),
     ],
-    canales: [{ nombre: es_en('Voz', 'Vocal'), senal: 'micro' }],
+    canales: [{ nombre: es_en('Voz', 'Vocal'), senal: 'micro', micDefault: 'SM58 / Beta 58', standDefault: 'boom' }],
   },
   {
     id: 'mic-coros',
@@ -402,7 +417,7 @@ export const EQUIPOS: readonly Equipo[] = [
       // Cable curvo.
       linea('M 50 72 C 46 78 40 82 34 82'),
     ],
-    canales: [{ nombre: es_en('Coros', 'BGV'), senal: 'micro' }],
+    canales: [{ nombre: es_en('Coros', 'BGV'), senal: 'micro', micDefault: 'SM58', standDefault: 'boom' }],
   },
   {
     id: 'mic-inal',
@@ -422,7 +437,7 @@ export const EQUIPOS: readonly Equipo[] = [
       linea('M 74 30 q 6 -6 0 -14 M 66 26 q 3 -3 0 -8'),
     ],
     canales: [
-      { nombre: es_en('Voz inalambrica', 'Wireless vox'), senal: 'inalambrico' },
+      { nombre: es_en('Voz inalambrica', 'Wireless vox'), senal: 'inalambrico', micDefault: 'SLX + SM58' },
     ],
   },
   // ---------- Vientos ----------
@@ -443,7 +458,7 @@ export const EQUIPOS: readonly Equipo[] = [
       suave('M 62 32 L 88 20 L 88 80 L 62 68 Z'),
       linea('M 62 32 L 88 20 L 88 80 L 62 68 Z'),
     ],
-    canales: [{ nombre: es_en('Trompeta', 'Trumpet'), senal: 'micro', phantom: true }],
+    canales: [{ nombre: es_en('Trompeta', 'Trumpet'), senal: 'micro', phantom: true, micDefault: 'SM57 / e906', standDefault: 'clip' }],
   },
   {
     id: 'mic-saxo',
@@ -461,7 +476,7 @@ export const EQUIPOS: readonly Equipo[] = [
       solido(circ(48, 60, 1.5)),
       solido(circ(52, 70, 1.5)),
     ],
-    canales: [{ nombre: es_en('Saxo', 'Sax'), senal: 'micro', phantom: true }],
+    canales: [{ nombre: es_en('Saxo', 'Sax'), senal: 'micro', phantom: true, micDefault: 'SM57 / e906', standDefault: 'clip' }],
   },
   {
     id: 'mic-cuerdas',
@@ -476,7 +491,7 @@ export const EQUIPOS: readonly Equipo[] = [
       // Cuerdas.
       linea('M 46 20 v 60 M 50 20 v 60 M 54 20 v 60'),
     ],
-    canales: [{ nombre: es_en('Cuerdas', 'Strings'), senal: 'micro', phantom: true }],
+    canales: [{ nombre: es_en('Cuerdas', 'Strings'), senal: 'micro', phantom: true, micDefault: 'DPA 4099', standDefault: 'clip' }],
   },
   // ---------- Monitores ----------
   {
@@ -570,7 +585,7 @@ export const EQUIPOS: readonly Equipo[] = [
       linea('M 50 42 v 12'),
       solido(circ(50, 60, 2)),
     ],
-    canales: [{ nombre: es_en('DI', 'DI'), senal: 'linea' }],
+    canales: [{ nombre: es_en('DI', 'DI'), senal: 'linea', micDefault: 'DI activa' }],
   },
   {
     id: 'pedestal',

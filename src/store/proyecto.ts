@@ -24,9 +24,28 @@ import { create } from 'zustand';
 import { temporal } from 'zundo';
 import type { TemporalState } from 'zundo';
 import { useStore } from 'zustand';
-import { EQUIPOS_POR_ID, type CanalPlantilla } from '@/icons/catalog';
+import {
+  EQUIPOS_POR_ID,
+  type CanalPlantilla,
+  type TipoStand,
+} from '@/icons/catalog';
 import type { Idioma } from '@/i18n/idioma';
 import { idiomaInicial, guardarIdioma } from '@/i18n/idioma';
+
+/**
+ * Override por canal, sparse: `overrides[i]` corresponde al canal en la
+ * posicion `i` del array `canales` del equipo del catalogo. Todo campo es
+ * opcional; los que no estan salen del template.
+ */
+export interface CanalOverride {
+  nombre?: string;
+  mic?: string;
+  stand?: TipoStand;
+  phantom?: boolean;
+  /** Inversion de fase (Ø). */
+  fase?: boolean;
+  nota?: string;
+}
 
 export interface Instrumento {
   /** id de instancia (uuid). No confundir con `equipoId` del catalogo. */
@@ -38,6 +57,8 @@ export interface Instrumento {
   rotacion: number;
   /** Nombre custom que sobreescribe al del catalogo. Opcional. */
   etiqueta?: string;
+  /** Detalle profesional por canal (input list). Sparse array. */
+  overrides?: (CanalOverride | undefined)[];
 }
 
 /**
@@ -88,6 +109,7 @@ export interface EstadoProyecto extends EstadoUI {
   moverInstrumento: (id: string, x: number, y: number) => void;
   rotarInstrumento: (id: string, delta: number) => void;
   etiquetarInstrumento: (id: string, etiqueta: string) => void;
+  setCanalOverride: (id: string, indice: number, override: CanalOverride) => void;
   duplicarInstrumento: (id: string) => string | null;
   eliminarInstrumento: (id: string) => void;
   traerAlFrente: (id: string) => void;
@@ -223,6 +245,45 @@ export const useProyecto = create<EstadoProyecto>()(
             instrumentos: s.proyecto.instrumentos.map((i) =>
               i.id === id ? { ...i, etiqueta: etiqueta || undefined } : i,
             ),
+          },
+        }));
+      },
+
+      setCanalOverride(id, indice, parcial) {
+        set((s) => ({
+          proyecto: {
+            ...s.proyecto,
+            modificado: Date.now(),
+            instrumentos: s.proyecto.instrumentos.map((i) => {
+              if (i.id !== id) return i;
+              const overrides = (i.overrides ?? []).slice();
+              // Merge con el override existente: `parcial` es lo que cambio,
+              // no la foto completa. Sin merge, editar el nombre te borra la
+              // nota que habias puesto antes.
+              const previo = overrides[indice] ?? {};
+              const combinado: CanalOverride = { ...previo };
+              for (const [k, v] of Object.entries(parcial) as [
+                keyof CanalOverride,
+                unknown,
+              ][]) {
+                if (v === undefined) continue;
+                if (typeof v === 'string' && v.trim() === '') {
+                  // String vacio = "volver al sugerido": borramos ese campo.
+                  delete (combinado as Record<string, unknown>)[k];
+                  continue;
+                }
+                (combinado as Record<string, unknown>)[k] = v;
+              }
+              overrides[indice] =
+                Object.keys(combinado).length > 0 ? combinado : undefined;
+              while (
+                overrides.length > 0 &&
+                overrides[overrides.length - 1] === undefined
+              ) {
+                overrides.pop();
+              }
+              return { ...i, overrides: overrides.length ? overrides : undefined };
+            }),
           },
         }));
       },
@@ -367,6 +428,12 @@ export interface CanalDerivado {
   phantom: boolean;
   /** id del instrumento del que salio, para saltar al lienzo desde la tabla. */
   instrumentoId: string;
+  /** Indice de este canal dentro de los canales del equipo (para override). */
+  indiceCanal: number;
+  mic: string;
+  stand: TipoStand | '';
+  fase: boolean;
+  nota: string;
 }
 
 export function derivarCanales(
@@ -381,20 +448,27 @@ export function derivarCanales(
     // nombre por defecto ("Cantante" en vez de "Cantante Voz"). Con varios
     // canales, la etiqueta prefija ("Kbd L", "Kbd R" -> "Rhodes L", "Rhodes R").
     const soloUno = equipo.canales.length === 1;
-    for (const canal of equipo.canales) {
+    equipo.canales.forEach((canal, indice) => {
       const nombreBase = canal.nombre[idioma];
-      let nombre = nombreBase;
-      if (inst.etiqueta) {
+      const override = inst.overrides?.[indice];
+      // Prioridad: override.nombre > etiqueta prefijada > nombre del template.
+      let nombre = override?.nombre ?? nombreBase;
+      if (!override?.nombre && inst.etiqueta) {
         nombre = soloUno ? inst.etiqueta : `${inst.etiqueta} ${nombreBase}`;
       }
       canales.push({
         numero: canales.length + 1,
         nombre,
         senal: canal.senal,
-        phantom: canal.phantom ?? false,
+        phantom: override?.phantom ?? canal.phantom ?? false,
         instrumentoId: inst.id,
+        indiceCanal: indice,
+        mic: override?.mic ?? canal.micDefault ?? '',
+        stand: override?.stand ?? canal.standDefault ?? '',
+        fase: override?.fase ?? false,
+        nota: override?.nota ?? '',
       });
-    }
+    });
   }
   return canales;
 }

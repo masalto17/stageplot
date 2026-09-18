@@ -24,6 +24,21 @@ interface Opciones {
   idioma: Idioma;
 }
 
+/**
+ * Trunca un string para que no salga del ancho de la columna. Corta con `...`
+ * si no entra completo. Un rider tipico tiene notas de 8 palabras.
+ */
+function recorte(pdf: import('jspdf').default, texto: string, anchoMm: number): string {
+  if (!texto) return '';
+  const anchoActual = pdf.getStringUnitWidth(texto) * pdf.getFontSize() / pdf.internal.scaleFactor;
+  if (anchoActual <= anchoMm - 1) return texto;
+  let corte = texto;
+  while (corte.length > 3 && pdf.getStringUnitWidth(corte + '...') * pdf.getFontSize() / pdf.internal.scaleFactor > anchoMm - 1) {
+    corte = corte.slice(0, -1);
+  }
+  return corte + '...';
+}
+
 /** Devuelve el Blob del PDF listo para descarga o Web Share. */
 export async function generarPdf({
   proyecto,
@@ -80,44 +95,64 @@ export async function generarPdf({
   );
   pdf.setTextColor(0);
 
-  // ---- Pagina 2: tabla de canales ----
+  // ---- Pagina 2+: input list ----
   if (canales.length > 0) {
-    pdf.addPage('a4', 'portrait');
+    pdf.addPage('a4', 'landscape');
     const anchoP = pdf.internal.pageSize.getWidth();
     const altoP = pdf.internal.pageSize.getHeight();
 
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(14);
-    const titulo = idioma === 'es' ? 'Lista de canales' : 'Channel list';
+    const titulo = idioma === 'es' ? 'Input list' : 'Input list';
     pdf.text(titulo, margen, margen + 4);
+    pdf.setFontSize(9);
+    pdf.setTextColor(120);
+    pdf.text(proyecto.nombre || 'Stage plot', anchoP - margen, margen + 4, { align: 'right' });
+    pdf.setTextColor(0);
 
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(10);
+    // Columnas (mm): # | Canal | Senal | +48V | O | Mic/DI | Stand | Nota.
+    const cols = [
+      { x: margen + 2,  w: 10, label: '#' },
+      { x: margen + 14, w: 52, label: t.canales },
+      { x: margen + 68, w: 22, label: t.senal },
+      { x: margen + 92, w: 14, label: '+48V' },
+      { x: margen + 108, w: 12, label: idioma === 'es' ? 'Ø' : 'Ø' },
+      { x: margen + 122, w: 55, label: t.fuente },
+      { x: margen + 179, w: 22, label: t.stand },
+      { x: margen + 203, w: anchoP - margen * 2 - 205, label: t.nota },
+    ];
 
-    const cabezal = margen + 16;
-    // Columnas: numero (14mm) | nombre (85mm) | senal (40mm) | +48V (marca).
+    const cabezal = margen + 14;
     pdf.setFillColor(240, 240, 240);
     pdf.rect(margen, cabezal, anchoP - margen * 2, 8, 'F');
     pdf.setFont('helvetica', 'bold');
-    pdf.text('#', margen + 2, cabezal + 6);
-    pdf.text(t.canales, margen + 18, cabezal + 6);
-    pdf.text(t.senal, margen + 105, cabezal + 6);
-    pdf.text('+48V', margen + 150, cabezal + 6);
+    pdf.setFontSize(9);
+    for (const c of cols) pdf.text(c.label, c.x, cabezal + 5.5);
     pdf.setFont('helvetica', 'normal');
 
-    let y = cabezal + 14;
+    let y = cabezal + 12;
     for (const canal of canales) {
-      if (y > altoP - margen - 6) {
-        pdf.addPage('a4', 'portrait');
-        y = margen + 6;
+      if (y > altoP - margen - 4) {
+        pdf.addPage('a4', 'landscape');
+        pdf.setFillColor(240, 240, 240);
+        pdf.rect(margen, margen, anchoP - margen * 2, 8, 'F');
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        for (const c of cols) pdf.text(c.label, c.x, margen + 5.5);
+        pdf.setFont('helvetica', 'normal');
+        y = margen + 12;
       }
-      pdf.text(String(canal.numero), margen + 2, y);
-      pdf.text(canal.nombre, margen + 18, y);
-      pdf.text(t.senales[canal.senal], margen + 105, y);
-      if (canal.phantom) pdf.text(idioma === 'es' ? 'Si' : 'Yes', margen + 150, y);
-      y += 7;
-      pdf.setDrawColor(230);
-      pdf.line(margen, y - 3, anchoP - margen, y - 3);
+      pdf.text(String(canal.numero), cols[0]!.x, y);
+      pdf.text(recorte(pdf, canal.nombre, cols[1]!.w), cols[1]!.x, y);
+      pdf.text(t.senales[canal.senal], cols[2]!.x, y);
+      if (canal.phantom) pdf.text(idioma === 'es' ? 'Si' : 'Yes', cols[3]!.x, y);
+      if (canal.fase) pdf.text(idioma === 'es' ? 'Si' : 'Yes', cols[4]!.x, y);
+      if (canal.mic) pdf.text(recorte(pdf, canal.mic, cols[5]!.w), cols[5]!.x, y);
+      if (canal.stand) pdf.text(t.stands[canal.stand], cols[6]!.x, y);
+      if (canal.nota) pdf.text(recorte(pdf, canal.nota, cols[7]!.w), cols[7]!.x, y);
+      y += 6;
+      pdf.setDrawColor(235);
+      pdf.line(margen, y - 2.5, anchoP - margen, y - 2.5);
     }
   }
 

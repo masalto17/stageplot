@@ -25,6 +25,14 @@ export function guardarIdioma(idioma: Idioma): void {
 
 /** Copy de UI que si o si necesita traduccion. */
 interface Copy {
+  fuente: string;
+  stand: string;
+  fase: string;
+  nota: string;
+  stands: Record<'recto' | 'boom' | 'corto' | 'clip' | 'suelo' | 'otro', string>;
+  detalleCanal: string;
+  volverASugerido: string;
+  toggleDetalles: string;
   nuevo: string;
   nuevoTitulo: string;
   nuevoVacio: string;
@@ -77,6 +85,16 @@ interface Copy {
 
 export const UI: Record<Idioma, Copy> = {
   es: {
+    fuente: 'Mic / DI',
+    stand: 'Pedestal',
+    fase: 'Fase',
+    nota: 'Nota',
+    stands: {
+      recto: 'Recto', boom: 'Boom', corto: 'Corto', clip: 'Clip', suelo: 'Suelo', otro: 'Otro',
+    },
+    detalleCanal: 'Detalle',
+    volverASugerido: 'Volver al sugerido',
+    toggleDetalles: 'Detalle input list',
     nuevo: 'Nuevo',
     nuevoTitulo: 'Empezar de nuevo',
     nuevoVacio: 'En blanco',
@@ -146,6 +164,16 @@ export const UI: Record<Idioma, Copy> = {
     },
   },
   en: {
+    fuente: 'Mic / DI',
+    stand: 'Stand',
+    fase: 'Ø',
+    nota: 'Note',
+    stands: {
+      recto: 'Straight', boom: 'Boom', corto: 'Short', clip: 'Clip', suelo: 'Floor', otro: 'Other',
+    },
+    detalleCanal: 'Detail',
+    volverASugerido: 'Reset to suggested',
+    toggleDetalles: 'Input list details',
     nuevo: 'New',
     nuevoTitulo: 'Start something new',
     nuevoVacio: 'Blank canvas',
