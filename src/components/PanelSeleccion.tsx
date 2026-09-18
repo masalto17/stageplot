@@ -13,7 +13,10 @@ export function PanelSeleccion() {
   );
   const rotar = useProyecto((s) => s.rotarInstrumento);
   const etiquetar = useProyecto((s) => s.etiquetarInstrumento);
+  const duplicar = useProyecto((s) => s.duplicarInstrumento);
   const eliminar = useProyecto((s) => s.eliminarInstrumento);
+  const traerAlFrente = useProyecto((s) => s.traerAlFrente);
+  const enviarAlFondo = useProyecto((s) => s.enviarAlFondo);
   const seleccionar = useProyecto((s) => s.seleccionar);
 
   if (!seleccionadoId || !instrumento) {
@@ -70,7 +73,32 @@ export function PanelSeleccion() {
         <button
           type="button"
           className="ma-boton ma-boton--secundario"
+          onClick={() => duplicar(instrumento.id)}
+          title="Duplicar (Cmd+D)"
+        >
+          Duplicar
+        </button>
+        <button
+          type="button"
+          className="ma-boton ma-boton--secundario"
+          onClick={() => traerAlFrente(instrumento.id)}
+          title="Traer al frente"
+        >
+          Al frente
+        </button>
+        <button
+          type="button"
+          className="ma-boton ma-boton--secundario"
+          onClick={() => enviarAlFondo(instrumento.id)}
+          title="Enviar al fondo"
+        >
+          Al fondo
+        </button>
+        <button
+          type="button"
+          className="ma-boton ma-boton--secundario"
           onClick={() => eliminar(instrumento.id)}
+          title="Eliminar (Supr)"
         >
           Eliminar
         </button>

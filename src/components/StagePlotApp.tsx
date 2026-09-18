@@ -7,7 +7,8 @@ import { ListaCanales } from './ListaCanales';
 import { Onboarding } from './Onboarding';
 import { hidratarProyecto, iniciarAutoguardado } from '@/store/persistencia';
 import { useProyecto } from '@/store/proyecto';
-import { plantillaBanda } from '@/lib/plantilla';
+import { plantillaBanda, plantillaPorSlug } from '@/lib/plantilla';
+import { useAtajos } from '@/hooks/useAtajos';
 
 /**
  * Root del editor. Se encarga del ciclo de vida:
@@ -24,8 +25,22 @@ export default function StagePlotApp() {
   useEffect(() => {
     let desuscribir: (() => void) | undefined;
     (async () => {
-      const habia = await hidratarProyecto();
-      if (!habia) cargar(plantillaBanda());
+      // Plantilla venida del hash gana sobre lo persistido: la landing por
+      // genero acaba de mandar al usuario aca justamente para partir de esa.
+      const hashPlantilla = leerHashPlantilla();
+      if (hashPlantilla) {
+        const proyecto = plantillaPorSlug(hashPlantilla);
+        if (proyecto) cargar(proyecto);
+        else {
+          const habia = await hidratarProyecto();
+          if (!habia) cargar(plantillaBanda());
+        }
+        // Limpiamos el hash: un F5 no debe reimponer la plantilla.
+        history.replaceState(null, '', location.pathname);
+      } else {
+        const habia = await hidratarProyecto();
+        if (!habia) cargar(plantillaBanda());
+      }
       desuscribir = iniciarAutoguardado();
       setListo(true);
     })();
@@ -33,6 +48,8 @@ export default function StagePlotApp() {
       desuscribir?.();
     };
   }, [cargar]);
+
+  useAtajos();
 
   if (!listo) {
     return (
@@ -98,4 +115,13 @@ export default function StagePlotApp() {
       <Onboarding />
     </div>
   );
+}
+
+/** Extrae `p=<slug>` del hash del URL, si existe. */
+function leerHashPlantilla(): string | null {
+  if (typeof location === 'undefined') return null;
+  const hash = location.hash.replace(/^#/, '');
+  if (!hash) return null;
+  const params = new URLSearchParams(hash);
+  return params.get('p');
 }

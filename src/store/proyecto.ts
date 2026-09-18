@@ -59,7 +59,10 @@ export interface EstadoProyecto extends EstadoUI {
   moverInstrumento: (id: string, x: number, y: number) => void;
   rotarInstrumento: (id: string, delta: number) => void;
   etiquetarInstrumento: (id: string, etiqueta: string) => void;
+  duplicarInstrumento: (id: string) => string | null;
   eliminarInstrumento: (id: string) => void;
+  traerAlFrente: (id: string) => void;
+  enviarAlFondo: (id: string) => void;
   seleccionar: (id: string | null) => void;
   cargarProyecto: (proyecto: Proyecto) => void;
   renombrar: (nombre: string) => void;
@@ -145,6 +148,31 @@ export const useProyecto = create<EstadoProyecto>()(
         }));
       },
 
+      duplicarInstrumento(id) {
+        const s = useProyecto.getState();
+        const src = s.proyecto.instrumentos.find((i) => i.id === id);
+        if (!src) return null;
+        // Offset chico para que no quede tapado por el original.
+        const nid = nuevoId();
+        set((state) => ({
+          proyecto: {
+            ...state.proyecto,
+            modificado: Date.now(),
+            instrumentos: [
+              ...state.proyecto.instrumentos,
+              {
+                ...src,
+                id: nid,
+                x: clamp(src.x + 40, 0, LIENZO.ancho),
+                y: clamp(src.y + 40, 0, LIENZO.alto),
+              },
+            ],
+          },
+          seleccionadoId: nid,
+        }));
+        return nid;
+      },
+
       etiquetarInstrumento(id, etiqueta) {
         set((s) => ({
           proyecto: {
@@ -166,6 +194,40 @@ export const useProyecto = create<EstadoProyecto>()(
           },
           seleccionadoId: s.seleccionadoId === id ? null : s.seleccionadoId,
         }));
+      },
+
+      traerAlFrente(id) {
+        set((state) => {
+          const inst = state.proyecto.instrumentos.find((i) => i.id === id);
+          if (!inst) return state;
+          return {
+            proyecto: {
+              ...state.proyecto,
+              modificado: Date.now(),
+              instrumentos: [
+                ...state.proyecto.instrumentos.filter((i) => i.id !== id),
+                inst,
+              ],
+            },
+          };
+        });
+      },
+
+      enviarAlFondo(id) {
+        set((state) => {
+          const inst = state.proyecto.instrumentos.find((i) => i.id === id);
+          if (!inst) return state;
+          return {
+            proyecto: {
+              ...state.proyecto,
+              modificado: Date.now(),
+              instrumentos: [
+                inst,
+                ...state.proyecto.instrumentos.filter((i) => i.id !== id),
+              ],
+            },
+          };
+        });
       },
 
       seleccionar(id) {
