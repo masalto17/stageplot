@@ -1,0 +1,252 @@
+/**
+ * Store del proyecto (Zustand + zundo).
+ *
+ * Modelo de dominio:
+ *
+ *  - Un "proyecto" es un stage plot: nombre, escenario y lista de instrumentos.
+ *  - Un "instrumento" es una instancia de un `Equipo` del catalogo, ubicada
+ *    en el lienzo. La lista de canales se DERIVA a partir de los instrumentos
+ *    presentes; no se persiste aparte.
+ *
+ * Coordenadas del lienzo:
+ *
+ *  - `x` e `y` estan en el sistema del `viewBox` del lienzo, 0-1000 x 0-625.
+ *  - Se persisten esos numeros y se re-escalan por CSS al renderizar. Asi el
+ *    plan es portable entre pantallas y no depende del tamano del contenedor.
+ *
+ * Undo/redo (zundo):
+ *
+ *  - Solo se trackea `instrumentos` y `nombre`. La seleccion visual no entra al
+ *    historial: hacer undo no cambia que icono esta seleccionado.
+ *  - Limite de 100 pasos. Un rider real no llega ni cerca.
+ */
+import { create } from 'zustand';
+import { temporal } from 'zundo';
+import type { TemporalState } from 'zundo';
+import { useStore } from 'zustand';
+import { EQUIPOS_POR_ID, type CanalPlantilla } from '@/icons/catalog';
+
+export interface Instrumento {
+  /** id de instancia (uuid). No confundir con `equipoId` del catalogo. */
+  id: string;
+  equipoId: string;
+  x: number;
+  y: number;
+  /** Rotacion en grados. 0 = orientacion base del icono. */
+  rotacion: number;
+  /** Nombre custom que sobreescribe al del catalogo. Opcional. */
+  etiqueta?: string;
+}
+
+export interface Proyecto {
+  id: string;
+  nombre: string;
+  creado: number;
+  modificado: number;
+  instrumentos: Instrumento[];
+}
+
+/** Dimensiones del lienzo en unidades internas. */
+export const LIENZO = { ancho: 1000, alto: 625 } as const;
+
+interface EstadoUI {
+  seleccionadoId: string | null;
+}
+
+export interface EstadoProyecto extends EstadoUI {
+  proyecto: Proyecto;
+  agregarInstrumento: (equipoId: string, x: number, y: number) => string;
+  moverInstrumento: (id: string, x: number, y: number) => void;
+  rotarInstrumento: (id: string, delta: number) => void;
+  etiquetarInstrumento: (id: string, etiqueta: string) => void;
+  eliminarInstrumento: (id: string) => void;
+  seleccionar: (id: string | null) => void;
+  cargarProyecto: (proyecto: Proyecto) => void;
+  renombrar: (nombre: string) => void;
+  reiniciar: () => void;
+}
+
+/** id estable para instrumentos. `crypto.randomUUID` esta en toda navegador PWA. */
+function nuevoId(): string {
+  return crypto.randomUUID();
+}
+
+/** Trunca el punto al viewBox para que un drag afuera no lo pierda. */
+function clamp(v: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, v));
+}
+
+function proyectoVacio(): Proyecto {
+  const ahora = Date.now();
+  return {
+    id: nuevoId(),
+    nombre: 'Sin titulo',
+    creado: ahora,
+    modificado: ahora,
+    instrumentos: [],
+  };
+}
+
+export const useProyecto = create<EstadoProyecto>()(
+  temporal(
+    (set) => ({
+      proyecto: proyectoVacio(),
+      seleccionadoId: null,
+
+      agregarInstrumento(equipoId, x, y) {
+        // Falla temprano: un id de equipo caido es un bug, no dato de usuario.
+        if (!EQUIPOS_POR_ID.has(equipoId)) {
+          throw new Error(`Equipo desconocido: ${equipoId}`);
+        }
+        const id = nuevoId();
+        set((s) => ({
+          proyecto: {
+            ...s.proyecto,
+            modificado: Date.now(),
+            instrumentos: [
+              ...s.proyecto.instrumentos,
+              {
+                id,
+                equipoId,
+                x: clamp(x, 0, LIENZO.ancho),
+                y: clamp(y, 0, LIENZO.alto),
+                rotacion: 0,
+              },
+            ],
+          },
+          seleccionadoId: id,
+        }));
+        return id;
+      },
+
+      moverInstrumento(id, x, y) {
+        set((s) => ({
+          proyecto: {
+            ...s.proyecto,
+            modificado: Date.now(),
+            instrumentos: s.proyecto.instrumentos.map((i) =>
+              i.id === id
+                ? { ...i, x: clamp(x, 0, LIENZO.ancho), y: clamp(y, 0, LIENZO.alto) }
+                : i,
+            ),
+          },
+        }));
+      },
+
+      rotarInstrumento(id, delta) {
+        set((s) => ({
+          proyecto: {
+            ...s.proyecto,
+            modificado: Date.now(),
+            instrumentos: s.proyecto.instrumentos.map((i) =>
+              i.id === id ? { ...i, rotacion: (i.rotacion + delta) % 360 } : i,
+            ),
+          },
+        }));
+      },
+
+      etiquetarInstrumento(id, etiqueta) {
+        set((s) => ({
+          proyecto: {
+            ...s.proyecto,
+            modificado: Date.now(),
+            instrumentos: s.proyecto.instrumentos.map((i) =>
+              i.id === id ? { ...i, etiqueta: etiqueta || undefined } : i,
+            ),
+          },
+        }));
+      },
+
+      eliminarInstrumento(id) {
+        set((s) => ({
+          proyecto: {
+            ...s.proyecto,
+            modificado: Date.now(),
+            instrumentos: s.proyecto.instrumentos.filter((i) => i.id !== id),
+          },
+          seleccionadoId: s.seleccionadoId === id ? null : s.seleccionadoId,
+        }));
+      },
+
+      seleccionar(id) {
+        set({ seleccionadoId: id });
+      },
+
+      cargarProyecto(proyecto) {
+        set({ proyecto, seleccionadoId: null });
+      },
+
+      renombrar(nombre) {
+        set((s) => ({
+          proyecto: { ...s.proyecto, nombre, modificado: Date.now() },
+        }));
+      },
+
+      reiniciar() {
+        set({ proyecto: proyectoVacio(), seleccionadoId: null });
+      },
+    }),
+    {
+      // Undo solo del proyecto: la seleccion es UI transitoria.
+      partialize: (estado) => ({ proyecto: estado.proyecto }),
+      limit: 100,
+      // Colapsar ediciones seguidas del mismo drag en un solo paso de undo.
+      handleSet: (handleSet) => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        return (estado) => {
+          if (timer) clearTimeout(timer);
+          timer = setTimeout(() => handleSet(estado), 200);
+        };
+      },
+    },
+  ),
+);
+
+/** Hook para consumir el store temporal de zundo. */
+export function useTemporal<T>(
+  selector: (state: TemporalState<{ proyecto: Proyecto }>) => T,
+): T {
+  return useStore(useProyecto.temporal, selector);
+}
+
+/**
+ * Deriva la lista de canales del proyecto:
+ *  - Se recorre `instrumentos` en el orden en que estan en el store.
+ *  - Cada instrumento aporta sus canales del catalogo.
+ *  - La etiqueta del canal se prefija con la etiqueta manual del instrumento
+ *    cuando existe (por ej. "Kick 1", "Kick 2").
+ */
+export interface CanalDerivado {
+  numero: number;
+  nombre: string;
+  senal: CanalPlantilla['senal'];
+  phantom: boolean;
+  /** id del instrumento del que salio, para saltar al lienzo desde la tabla. */
+  instrumentoId: string;
+}
+
+export function derivarCanales(instrumentos: readonly Instrumento[]): CanalDerivado[] {
+  const canales: CanalDerivado[] = [];
+  for (const inst of instrumentos) {
+    const equipo = EQUIPOS_POR_ID.get(inst.equipoId);
+    if (!equipo) continue;
+    // Equipo con un solo canal + etiqueta manual: la etiqueta reemplaza al
+    // nombre por defecto ("Cantante" en vez de "Cantante Voz"). Con varios
+    // canales, la etiqueta prefija ("Kbd L", "Kbd R" -> "Rhodes L", "Rhodes R").
+    const soloUno = equipo.canales.length === 1;
+    for (const canal of equipo.canales) {
+      let nombre = canal.nombre;
+      if (inst.etiqueta) {
+        nombre = soloUno ? inst.etiqueta : `${inst.etiqueta} ${canal.nombre}`;
+      }
+      canales.push({
+        numero: canales.length + 1,
+        nombre,
+        senal: canal.senal,
+        phantom: canal.phantom ?? false,
+        instrumentoId: inst.id,
+      });
+    }
+  }
+  return canales;
+}
