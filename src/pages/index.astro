@@ -1,53 +1,433 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { Image } from 'astro:assets';
+import logoBlanco from '@/assets/brand-ecosistema/masalto-madre-blanco.png';
 
-const crear = `${import.meta.env.BASE_URL}crear/`;
+const inicio = import.meta.env.BASE_URL;
+const crear = `${inicio}crear/`;
+const crearRock = `${inicio}crear/#p=rock`;
+
+interface Ecosistema {
+  nombre: string;
+  descriptor: string;
+  href?: string;
+}
+
+const ECOSISTEMA: readonly Ecosistema[] = [
+  { nombre: 'MasAlto Producciones', descriptor: 'Produccion tecnica y artistica' },
+  { nombre: 'MasAlto Estructuras', descriptor: 'Escenarios, tribunas y FOH' },
+  { nombre: 'MasAlto Energía', descriptor: 'Generacion y distribucion electrica' },
+  { nombre: 'MasAlto Venues', descriptor: 'Cartera de espacios' },
+  { nombre: 'MasAlto Layout', descriptor: 'Previsualizador de estructuras' },
+  { nombre: 'ACCRED by MasAlto', descriptor: 'Acreditaciones y control de acceso' },
+];
 ---
 
 <BaseLayout
-  title="MasAlto StagePlot - Crea tu stage plot gratis"
-  description="Arma el stage plot de tu show y su lista de canales en minutos. Gratis, desde el celular, y lo compartis en PDF por WhatsApp."
-
+  title="MasAlto StagePlot - El stage plot de tu banda en 5 minutos"
+  description="Editor gratuito de stage plots e input lists para bandas y sonidistas. 31 iconos, canales automaticos, export PDF, compartir link. Desde el celular, offline, sin registro."
   ogSlug="default"
 >
-  <section class="ma-hero ma-contenedor">
-    <h1>El stage plot de tu show, listo en minutos</h1>
-    <p>
-      Arrastra los equipos, obtene la lista de canales automatica y compartila en
-      PDF con el sonidista. Gratis, sin registro y desde el celular.
-    </p>
-    <div class="ma-hero__acciones">
-      <a class="ma-boton" href={crear}>Crear stage plot</a>
+  <div class="landing">
+
+    <!-- ============ HERO ============ -->
+    <section class="landing__hero" data-spotlight aria-labelledby="hero-h1">
+      <div class="landing__hero-fondo" aria-hidden="true">
+        <div class="landing__spotlight"></div>
+        <div class="landing__grid-fondo"></div>
+      </div>
+
+      <div class="landing__contenedor">
+        <div class="landing__hero-inner">
+
+          <div class="landing__hero-texto">
+            <p class="landing__chip">
+              <span class="landing__chip-punto" aria-hidden="true"></span>
+              MasAlto Producciones &middot; StagePlot
+            </p>
+
+            <h1 id="hero-h1" class="landing__h1">
+              El <span class="landing__acento">rider</span> mas pro<br />
+              de tu banda,<br />
+              armado en 5 minutos.
+            </h1>
+
+            <p class="landing__lead">
+              Editor gratuito para bandas y sonidistas. Arrastra los equipos,
+              obtene la lista de canales automatica y exportala en PDF apaisado
+              con el input list detallado.
+            </p>
+
+            <div class="landing__cta">
+              <a class="landing__boton landing__boton--principal" href={crearRock}>
+                <span>Empezar con plantilla banda</span>
+                <span class="landing__boton-flecha" aria-hidden="true">&rarr;</span>
+              </a>
+              <a class="landing__boton landing__boton--secundario" href={crear}>
+                Empezar de cero
+              </a>
+            </div>
+
+            <ul class="landing__hero-meta">
+              <li><span class="ma-dato">100%</span>Gratis, sin registro</li>
+              <li><span class="ma-dato">31</span>Iconos de equipos</li>
+              <li><span class="ma-dato">&lt;60kB</span>PDF liviano</li>
+              <li><span class="ma-dato">ES / EN</span>Bilingue</li>
+            </ul>
+          </div>
+
+          <div class="landing__hero-demo" aria-hidden="true">
+            <!-- Animacion: mini stage plot con drums cayendo en posicion -->
+            <svg viewBox="0 0 460 400" xmlns="http://www.w3.org/2000/svg" class="landing__demo-svg">
+              <!-- Fondo con wings -->
+              <rect x="0" y="0" width="460" height="400" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" rx="12" />
+              <rect x="0" y="0" width="30" height="400" fill="rgba(255,255,255,0.03)" />
+              <rect x="430" y="0" width="30" height="400" fill="rgba(255,255,255,0.03)" />
+              <!-- Grilla dots -->
+              <g class="landing__demo-dots">
+                {Array.from({length: 8}).map((_, i) =>
+                  Array.from({length: 6}).map((_, j) => (
+                    <circle cx={60 + i * 50} cy={60 + j * 50} r="0.8" fill="rgba(255,255,255,0.25)" />
+                  ))
+                )}
+              </g>
+
+              <!-- Instrumentos (cada uno con delay creciente) -->
+              <g class="landing__demo-item" style="--delay: 0.1s">
+                <rect x="200" y="100" width="60" height="60" rx="6" fill="white" stroke="#E30613" stroke-width="2" />
+                <circle cx="230" cy="130" r="18" fill="none" stroke="#000" stroke-width="2" />
+                <circle cx="230" cy="130" r="4" fill="#000" />
+                <text x="230" y="175" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="9" font-weight="700" fill="#000">Bombo</text>
+              </g>
+
+              <g class="landing__demo-item" style="--delay: 0.25s">
+                <rect x="130" y="140" width="55" height="55" rx="6" fill="white" stroke="rgba(0,0,0,0.15)" stroke-width="1.5" />
+                <circle cx="157" cy="167" r="14" fill="none" stroke="#000" stroke-width="2" />
+                <text x="157" y="207" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="9" font-weight="700" fill="#000">Snare</text>
+              </g>
+
+              <g class="landing__demo-item" style="--delay: 0.4s">
+                <rect x="275" y="140" width="55" height="55" rx="6" fill="white" stroke="rgba(0,0,0,0.15)" stroke-width="1.5" />
+                <circle cx="302" cy="167" r="14" fill="none" stroke="#000" stroke-width="2" />
+                <circle cx="302" cy="167" r="9" fill="none" stroke="#000" stroke-width="1.5" />
+                <text x="302" y="207" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="9" font-weight="700" fill="#000">Hi-hat</text>
+              </g>
+
+              <g class="landing__demo-item" style="--delay: 0.55s">
+                <rect x="60" y="240" width="60" height="60" rx="6" fill="white" stroke="rgba(0,0,0,0.15)" stroke-width="1.5" />
+                <rect x="72" y="252" width="36" height="36" rx="3" fill="none" stroke="#000" stroke-width="2" />
+                <circle cx="90" cy="270" r="8" fill="#000" />
+                <text x="90" y="315" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="9" font-weight="700" fill="#000">Ampli</text>
+              </g>
+
+              <g class="landing__demo-item" style="--delay: 0.7s">
+                <rect x="340" y="240" width="60" height="60" rx="6" fill="white" stroke="rgba(0,0,0,0.15)" stroke-width="1.5" />
+                <rect x="352" y="252" width="36" height="36" rx="3" fill="none" stroke="#000" stroke-width="2" />
+                <circle cx="370" cy="270" r="8" fill="#000" />
+                <text x="370" y="315" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="9" font-weight="700" fill="#000">Ampli</text>
+              </g>
+
+              <g class="landing__demo-item" style="--delay: 0.85s">
+                <rect x="200" y="270" width="60" height="80" rx="6" fill="white" stroke="rgba(0,0,0,0.15)" stroke-width="1.5" />
+                <circle cx="230" cy="292" r="10" fill="none" stroke="#000" stroke-width="2" />
+                <line x1="230" y1="302" x2="230" y2="325" stroke="#000" stroke-width="2" />
+                <text x="230" y="345" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="9" font-weight="700" fill="#000">Cantante</text>
+              </g>
+
+              <!-- Frente del escenario en rojo -->
+              <line class="landing__demo-frente" x1="40" y1="378" x2="420" y2="378" stroke="#E30613" stroke-width="3" />
+              <text x="230" y="393" text-anchor="middle" font-family="Nunito Sans, sans-serif" font-size="10" font-weight="800" letter-spacing="2" fill="#E30613">FRENTE DEL ESCENARIO</text>
+            </svg>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="landing__scroll-hint" aria-hidden="true">
+        <span>Ver mas</span>
+        <span class="landing__scroll-linea"></span>
+      </div>
+    </section>
+
+    <!-- ============ TICKER ============ -->
+    <div class="landing__ticker" aria-hidden="true">
+      <div class="landing__ticker-inner">
+        {Array.from({length: 3}).map(() => (
+          <div class="landing__ticker-lote">
+            <span>Bateria completa</span><span>&bull;</span>
+            <span>Bajo con DI</span><span>&bull;</span>
+            <span>Amp de guitarra</span><span>&bull;</span>
+            <span>Teclados stereo</span><span>&bull;</span>
+            <span>Vientos y cuerdas</span><span>&bull;</span>
+            <span>Monitores de piso</span><span>&bull;</span>
+            <span>Sidefill</span><span>&bull;</span>
+            <span>In-ear</span><span>&bull;</span>
+            <span>DI activa</span><span>&bull;</span>
+            <span>Cajon y percusion</span><span>&bull;</span>
+            <span>Cabina DJ</span><span>&bull;</span>
+          </div>
+        ))}
+      </div>
     </div>
 
-    <ul class="ma-lista">
-      <li><strong>Lienzo drag &amp; drop</strong><br />Movil y escritorio.</li>
-      <li><strong>Lista de canales</strong><br />Se arma sola con cada equipo.</li>
-      <li><strong>Export PDF</strong><br />Plano + tabla de canales.</li>
-      <li><strong>Compartir</strong><br />WhatsApp o mail, en un toque.</li>
-    </ul>
-  </section>
+    <!-- ============ NUMEROS ============ -->
+    <section class="landing__seccion landing__numeros" data-reveal>
+      <div class="landing__contenedor">
+        <p class="landing__eyebrow">Que hay adentro</p>
+        <h2 class="landing__h2">Herramienta chica, planos serios.</h2>
+        <div class="landing__stat-grid">
+          <div class="landing__stat">
+            <p class="landing__stat-numero" data-count="31">0</p>
+            <p class="landing__stat-label">Iconos de equipos</p>
+            <p class="landing__stat-desc">Bateria, bajo, guitarras, teclados, voces, vientos, cuerdas, monitores.</p>
+          </div>
+          <div class="landing__stat">
+            <p class="landing__stat-numero" data-count="10">0</p>
+            <p class="landing__stat-label">Categorias</p>
+            <p class="landing__stat-desc">Cada equipo trae sus canales por defecto y sus microfonos sugeridos.</p>
+          </div>
+          <div class="landing__stat">
+            <p class="landing__stat-numero" data-count="8">0</p>
+            <p class="landing__stat-label">Columnas de input list</p>
+            <p class="landing__stat-desc">Numero, canal, senal, +48V, fase, mic/DI, pedestal, nota.</p>
+          </div>
+          <div class="landing__stat">
+            <p class="landing__stat-numero" data-count="52" data-suffix="kB">0</p>
+            <p class="landing__stat-label">PDF tipico</p>
+            <p class="landing__stat-desc">Comodo para WhatsApp, incluso en 3G. Plano + tabla apaisada.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <section class="ma-hero ma-contenedor">
-    <h2>Guias tecnicas</h2>
-    <p>
-      Antes de armar un stage plot serio, vale la pena saber que va dentro.
-      Estas guias son cortas, sin relleno, y salieron de trabajar en riders
-      de verdad.
-    </p>
-    <ul class="ma-lista">
-      <li>
-        <a href={`${import.meta.env.BASE_URL}guias/como-armar-un-stage-plot/`}>
-          <strong>Como armar un stage plot</strong><br />
-          Que es, como se lee, y armar el tuyo en 15 minutos.
-        </a>
-      </li>
-      <li>
-        <a href={`${import.meta.env.BASE_URL}guias/que-es-input-list/`}>
-          <strong>Que es un input list</strong><br />
-          El otro papel que va con el stage plot: mic, stand, +48V, notas.
-        </a>
-      </li>
-    </ul>
-  </section>
+    <!-- ============ FEATURES ============ -->
+    <section class="landing__seccion landing__features" data-reveal>
+      <div class="landing__contenedor">
+        <p class="landing__eyebrow">Por que funciona</p>
+        <h2 class="landing__h2">Detalles que hacen la diferencia.</h2>
+
+        <div class="landing__grid-cards">
+          <article class="landing__card" data-tilt>
+            <div class="landing__card-num ma-dato">01</div>
+            <h3>Lienzo con drag &amp; drop real</h3>
+            <p>Arrastras desde la paleta al lugar exacto. Multi-seleccion, drag grupal, guias smart de alineacion cuando se acercan al centro de otros equipos.</p>
+          </article>
+
+          <article class="landing__card" data-tilt>
+            <div class="landing__card-num ma-dato">02</div>
+            <h3>Canales automaticos</h3>
+            <p>Cada equipo suma sus canales al input list con senal, phantom, mic y stand sugeridos. Editas por celda; lo demas hereda del catalogo.</p>
+          </article>
+
+          <article class="landing__card" data-tilt>
+            <div class="landing__card-num ma-dato">03</div>
+            <h3>Fondo del venue importable</h3>
+            <p>Cargas la foto o el plano del lugar como fondo con opacidad ajustable. Ubicas los equipos siguiendo las marcas del piso.</p>
+          </article>
+
+          <article class="landing__card" data-tilt>
+            <div class="landing__card-num ma-dato">04</div>
+            <h3>Bilingue ES / EN</h3>
+            <p>Toggle en la barra. UI, categorias, input list y PDF cambian de idioma. Etiquetas y notas propias quedan como las escribiste.</p>
+          </article>
+
+          <article class="landing__card" data-tilt>
+            <div class="landing__card-num ma-dato">05</div>
+            <h3>Biblioteca multi-proyecto</h3>
+            <p>Un rider por banda o por formacion. Duplicar, renombrar, borrar. Autoguardado local en IndexedDB. Funciona offline.</p>
+          </article>
+
+          <article class="landing__card" data-tilt>
+            <div class="landing__card-num ma-dato">06</div>
+            <h3>Compartir por link</h3>
+            <p>Genera un link con el proyecto encoded en el URL. El sonidista lo abre y ve lo mismo que vos ves. Sin backend, sin cuenta.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PARA QUIEN ============ -->
+    <section class="landing__seccion landing__para-quien" data-reveal>
+      <div class="landing__contenedor">
+        <p class="landing__eyebrow">Para quien</p>
+        <h2 class="landing__h2">Tres oficios distintos, una misma herramienta.</h2>
+
+        <div class="landing__personas">
+          <article class="landing__persona">
+            <p class="landing__persona-rol">Bandas</p>
+            <p class="landing__persona-frase">"Antes armaba el rider en un mail. Ahora tengo un PDF que el sonidista abre sin preguntar."</p>
+            <p class="landing__persona-detalle">Editor pensado para musicos: iconos claros, plantillas por genero, canales sugeridos.</p>
+          </article>
+
+          <article class="landing__persona">
+            <p class="landing__persona-rol">Sonidistas</p>
+            <p class="landing__persona-frase">"Recibo el input list con senal, mic, stand y phantom. Cinco minutos menos de patcheo."</p>
+            <p class="landing__persona-detalle">Convenciones de la industria por defecto: SM57, Beta 52, KM184, DPA. Orden de canales estandar.</p>
+          </article>
+
+          <article class="landing__persona">
+            <p class="landing__persona-rol">Productores</p>
+            <p class="landing__persona-frase">"Una plantilla por artista, todas guardadas, link compartible con el equipo del venue."</p>
+            <p class="landing__persona-detalle">Multi-proyecto, autoguardado, compartir por link sin backend, PDF liviano para WhatsApp.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GUIAS ============ -->
+    <section class="landing__seccion landing__guias" data-reveal>
+      <div class="landing__contenedor">
+        <p class="landing__eyebrow">Aprender</p>
+        <h2 class="landing__h2">Guias tecnicas sin relleno.</h2>
+        <p class="landing__intro">
+          Antes de armar un stage plot serio, vale la pena saber que va dentro.
+          Escritas por gente que trabaja en el rider, no por generadores de
+          contenido.
+        </p>
+
+        <ul class="landing__guias-lista">
+          <li>
+            <a href={`${inicio}guias/como-armar-un-stage-plot/`}>
+              <span class="landing__guia-tag ma-dato">Guia &middot; 9 min</span>
+              <h3>Como armar un stage plot</h3>
+              <p>Que es, como se lee, y armar el tuyo en 15 minutos. Con ejemplo real de banda de rock.</p>
+              <span class="landing__guia-flecha" aria-hidden="true">&rarr;</span>
+            </a>
+          </li>
+          <li>
+            <a href={`${inicio}guias/que-es-input-list/`}>
+              <span class="landing__guia-tag ma-dato">Guia &middot; 6 min</span>
+              <h3>Que es un input list</h3>
+              <p>El otro papel que va con el stage plot: mic, DI, stand, +48V y notas por canal.</p>
+              <span class="landing__guia-flecha" aria-hidden="true">&rarr;</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ ECOSISTEMA ============ -->
+    <section class="landing__seccion landing__ecosistema" data-reveal>
+      <div class="landing__contenedor">
+        <div class="landing__eco-header">
+          <div>
+            <p class="landing__eyebrow landing__eyebrow--claro">Parte del ecosistema</p>
+            <h2 class="landing__h2 landing__h2--claro">MasAlto: escenarios, sonido, energia y espacios.</h2>
+            <p class="landing__intro landing__intro--claro">
+              StagePlot es la primera pieza de una familia de herramientas y
+              servicios que MasAlto pone a disposicion del ecosistema musical
+              argentino.
+            </p>
+          </div>
+          <div class="landing__eco-logo">
+            <Image
+              src={logoBlanco}
+              alt="MasAlto"
+              widths={[220, 440]}
+              sizes="220px"
+            />
+          </div>
+        </div>
+
+        <ul class="landing__eco-grid">
+          {ECOSISTEMA.map((e) => (
+            <li class="landing__eco-item">
+              <p class="landing__eco-nombre">{e.nombre}</p>
+              <p class="landing__eco-descriptor">{e.descriptor}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ CTA FINAL ============ -->
+    <section class="landing__seccion landing__cta-final" data-reveal>
+      <div class="landing__contenedor">
+        <p class="landing__eyebrow">Empezar</p>
+        <h2 class="landing__h2">Tu primer stage plot en 5 minutos.</h2>
+        <p class="landing__intro">
+          Gratis. Desde el celular. Sin registro. Sin subida a la nube. Cuando
+          termines, exportas el PDF y lo compartis por WhatsApp o mail.
+        </p>
+        <div class="landing__cta">
+          <a class="landing__boton landing__boton--principal" href={crearRock}>
+            <span>Empezar con plantilla banda</span>
+            <span class="landing__boton-flecha" aria-hidden="true">&rarr;</span>
+          </a>
+          <a class="landing__boton landing__boton--secundario" href={crear}>
+            Empezar de cero
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // ----- Cursor spotlight en el hero -----
+    const hero = document.querySelector('[data-spotlight]') as HTMLElement | null;
+    if (hero) {
+      hero.addEventListener('pointermove', (e) => {
+        const rect = hero.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        hero.style.setProperty('--sx', `${x}%`);
+        hero.style.setProperty('--sy', `${y}%`);
+      });
+      hero.addEventListener('pointerleave', () => {
+        hero.style.setProperty('--sx', '50%');
+        hero.style.setProperty('--sy', '50%');
+      });
+    }
+
+    // ----- Reveal on scroll -----
+    const revelables = document.querySelectorAll('[data-reveal]');
+    const obs = new IntersectionObserver((entradas) => {
+      for (const e of entradas) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          obs.unobserve(e.target);
+        }
+      }
+    }, { threshold: 0.15, rootMargin: '0px 0px -80px 0px' });
+    revelables.forEach((el) => obs.observe(el));
+
+    // ----- Counter animation -----
+    const nums = document.querySelectorAll<HTMLElement>('[data-count]');
+    const obs2 = new IntersectionObserver((entradas) => {
+      for (const entrada of entradas) {
+        if (!entrada.isIntersecting) continue;
+        const el = entrada.target as HTMLElement;
+        const meta = Number(el.dataset.count ?? '0');
+        const sufijo = el.dataset.suffix ?? '';
+        const inicio = performance.now();
+        const dur = 900;
+        const paso = (t: number) => {
+          const p = Math.min(1, (t - inicio) / dur);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(meta * eased) + sufijo;
+          if (p < 1) requestAnimationFrame(paso);
+        };
+        requestAnimationFrame(paso);
+        obs2.unobserve(el);
+      }
+    }, { threshold: 0.4 });
+    nums.forEach((n) => obs2.observe(n));
+
+    // ----- Card tilt sutil -----
+    const cards = document.querySelectorAll<HTMLElement>('[data-tilt]');
+    for (const card of cards) {
+      card.addEventListener('pointermove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const dx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+        const dy = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+        card.style.setProperty('--tilt-x', `${dy * -3}deg`);
+        card.style.setProperty('--tilt-y', `${dx * 3}deg`);
+      });
+      card.addEventListener('pointerleave', () => {
+        card.style.setProperty('--tilt-x', '0deg');
+        card.style.setProperty('--tilt-y', '0deg');
+      });
+    }
+  </script>
 </BaseLayout>
