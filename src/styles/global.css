@@ -1057,3 +1057,13 @@ button:focus-visible {
 
 /* Rueda de zoom: el wrap del lienzo no debe scrollar por wheel. */
 .ma-lienzo-wrap { touch-action: none; }
+
+/* ---------- Marquee de seleccion ---------- */
+
+.ma-lienzo__marquee {
+  position: absolute;
+  border: 1.5px dashed var(--ma-rojo);
+  background: rgba(227, 6, 19, 0.08);
+  pointer-events: none;
+  z-index: 4;
+}

@@ -59,6 +59,8 @@ export function Lienzo() {
 
   const [dragging, setDragging] = useState(false);
   const [guias, setGuias] = useState<GuiaAlineacion[]>([]);
+  /** Rectangulo de seleccion en unidades del viewBox, null si no hay marquee. */
+  const [marquee, setMarquee] = useState<{x0: number; y0: number; x1: number; y1: number} | null>(null);
   const seleccionEsRef = useRef<Set<string>>(new Set(seleccionadosIds));
   seleccionEsRef.current = new Set(seleccionadosIds);
 
@@ -205,8 +207,70 @@ export function Lienzo() {
 
   const enSel = new Set(seleccionadosIds);
 
+  /**
+   * Marquee selection: pointerdown en el fondo del lienzo inicia un rectangulo
+   * de seleccion. Al arrastrar, los instrumentos cuyo centro cae dentro pasan
+   * a estar seleccionados en tiempo real. Con Shift / Cmd / Ctrl la seleccion
+   * previa se PRESERVA y el marquee suma; sin modificador, la reemplaza.
+   *
+   * Si el usuario apenas movio el cursor (drag menor a `MIN_MARQUEE_DRAG`),
+   * lo tratamos como click en el fondo -> deselecciona.
+   */
+  const MIN_MARQUEE_DRAG = 6; // px del cliente
   const abrirEnFondo: React.PointerEventHandler<HTMLDivElement> = (e) => {
-    if (e.target === e.currentTarget) seleccionar(null);
+    if (e.target !== e.currentTarget) return;
+    const raizEl = contenedor.current;
+    if (!raizEl) return;
+    const rect = raizEl.getBoundingClientRect();
+    const clientStartX = e.clientX;
+    const clientStartY = e.clientY;
+    const x0 = ((clientStartX - rect.left) / rect.width) * LIENZO.ancho;
+    const y0 = ((clientStartY - rect.top) / rect.height) * LIENZO.alto;
+    const modificador = e.shiftKey || e.metaKey || e.ctrlKey;
+    const previa: string[] = modificador ? [...useProyecto.getState().seleccionadosIds] : [];
+    let arranco = false;
+
+    const toViewbox = (evt: PointerEvent) => ({
+      x: Math.max(0, Math.min(LIENZO.ancho, ((evt.clientX - rect.left) / rect.width) * LIENZO.ancho)),
+      y: Math.max(0, Math.min(LIENZO.alto, ((evt.clientY - rect.top) / rect.height) * LIENZO.alto)),
+    });
+
+    const dentroDe = (cx: number, cy: number, x0: number, y0: number, x1: number, y1: number) => {
+      const [xa, xb] = x0 < x1 ? [x0, x1] : [x1, x0];
+      const [ya, yb] = y0 < y1 ? [y0, y1] : [y1, y0];
+      return cx >= xa && cx <= xb && cy >= ya && cy <= yb;
+    };
+
+    const onMove = (evt: PointerEvent) => {
+      if (!arranco) {
+        const dx = evt.clientX - clientStartX;
+        const dy = evt.clientY - clientStartY;
+        if (Math.hypot(dx, dy) < MIN_MARQUEE_DRAG) return;
+        arranco = true;
+      }
+      const { x, y } = toViewbox(evt);
+      setMarquee({ x0, y0, x1: x, y1: y });
+      // Preview en tiempo real de la seleccion.
+      const insts = useProyecto.getState().proyecto.instrumentos;
+      const dentro = insts.filter((i) => dentroDe(i.x, i.y, x0, y0, x, y)).map((i) => i.id);
+      const finales = modificador ? Array.from(new Set([...previa, ...dentro])) : dentro;
+      seleccionarVarios(finales);
+    };
+
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      setMarquee(null);
+      if (!arranco && !modificador) {
+        // Click puro en el fondo: deselecciona.
+        seleccionar(null);
+      }
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
   };
 
   return (
@@ -233,6 +297,8 @@ export function Lienzo() {
         )}
 
         <FondoEscenario idioma={idioma} grilla={grilla} guias={guias} />
+
+        {marquee && <MarqueeRect marquee={marquee} />}
 
         {proyecto.instrumentos.map((inst) => (
           <InstrumentoLienzo
@@ -377,5 +443,30 @@ function InstrumentoLienzo({
       <IconoEquipo equipo={equipo} size={60} seleccionado={seleccionado} idioma={idioma} />
       <span className="ma-lienzo__etiqueta">{etiqueta}</span>
     </div>
+  );
+}
+
+
+/** Rectangulo dashed rojo con relleno rojo suave: preview de seleccion. */
+function MarqueeRect({
+  marquee,
+}: {
+  marquee: { x0: number; y0: number; x1: number; y1: number };
+}) {
+  const izq = Math.min(marquee.x0, marquee.x1);
+  const arriba = Math.min(marquee.y0, marquee.y1);
+  const ancho = Math.abs(marquee.x1 - marquee.x0);
+  const alto = Math.abs(marquee.y1 - marquee.y0);
+  return (
+    <div
+      className="ma-lienzo__marquee"
+      style={{
+        left: `${(izq / LIENZO.ancho) * 100}%`,
+        top: `${(arriba / LIENZO.alto) * 100}%`,
+        width: `${(ancho / LIENZO.ancho) * 100}%`,
+        height: `${(alto / LIENZO.alto) * 100}%`,
+      }}
+      aria-hidden="true"
+    />
   );
 }
