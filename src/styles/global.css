@@ -1036,3 +1036,24 @@ button:focus-visible {
   color: var(--ma-texto-suave);
   font-size: 0.82rem;
 }
+
+/* ---------- Ghost al arrastrar desde la paleta ---------- */
+
+.ma-paleta__ghost {
+  transform: translate(-50%, -50%);
+  padding: 8px;
+  background: var(--ma-blanco);
+  border: 2px solid var(--ma-rojo);
+  border-radius: var(--ma-radio-chico);
+  box-shadow: var(--ma-sombra-fuerte);
+  opacity: 0.9;
+}
+
+.ma-paleta__ghost svg { display: block; width: 44px; height: 44px; }
+
+/* Cursor hint sobre los items */
+.ma-paleta__item { cursor: grab; }
+.ma-paleta__item:active { cursor: grabbing; }
+
+/* Rueda de zoom: el wrap del lienzo no debe scrollar por wheel. */
+.ma-lienzo-wrap { touch-action: none; }

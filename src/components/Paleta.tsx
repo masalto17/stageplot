@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { EQUIPOS, type CategoriaEquipo } from '@/icons/catalog';
 import { IconoEquipo } from './IconoEquipo';
-import { useProyecto, LIENZO } from '@/store/proyecto';
+import { useProyecto } from '@/store/proyecto';
 import { UI } from '@/i18n/idioma';
+import { iniciarArrastrePaleta } from '@/lib/arrastrarDesdePaleta';
 
 const ORDEN: readonly CategoriaEquipo[] = [
   'bateria', 'percusion', 'bajo', 'guitarra', 'teclado',
@@ -21,6 +22,9 @@ export function Paleta() {
   const agregar = useProyecto((s) => s.agregarInstrumento);
   const idioma = useProyecto((s) => s.idioma);
   const [busqueda, setBusqueda] = useState('');
+  // Se comparte una flag entre los items para suprimir el click sintetico
+  // que salta despues del pointerup cuando hubo drag real.
+  const suprimirClickRef = useRef({ suprimir: false });
 
   const grupos = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -65,27 +69,76 @@ export function Paleta() {
             </h3>
             <div className="ma-paleta__grilla">
               {equipos.map((eq) => (
-                <button
-                  type="button"
+                <ItemPaleta
                   key={eq.id}
-                  className="ma-paleta__item"
-                  onClick={() =>
-                    agregar(eq.id, LIENZO.ancho / 2, LIENZO.alto / 2)
-                  }
-                  aria-label={`${eq.nombre[idioma]} (${eq.nombre[idioma === 'es' ? 'en' : 'es']})`}
-                  title={`${eq.nombre.es} / ${eq.nombre.en}`}
-                >
-                  <IconoEquipo equipo={eq} size={40} idioma={idioma} />
-                  <span className="ma-paleta__nombre">{eq.nombre[idioma]}</span>
-                  <span className="ma-paleta__nombre-alt">
-                    {eq.nombre[idioma === 'es' ? 'en' : 'es']}
-                  </span>
-                </button>
+                  equipo={eq}
+                  idioma={idioma}
+                  agregar={agregar}
+                  suprimirClickRef={suprimirClickRef}
+                />
               ))}
             </div>
           </section>
         );
       })}
     </aside>
+  );
+}
+
+
+interface PropsItem {
+  equipo: import('@/icons/catalog').Equipo;
+  idioma: import('@/i18n/idioma').Idioma;
+  agregar: (equipoId: string, x: number, y: number) => string;
+  suprimirClickRef: React.RefObject<{ suprimir: boolean }>;
+}
+
+function ItemPaleta({ equipo, idioma, agregar, suprimirClickRef }: PropsItem) {
+  const svgRef = useRef<HTMLSpanElement>(null);
+
+  const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    // Solo mouse principal / touch primario. Ignoramos click derecho.
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const svgHtml = svgRef.current?.querySelector('svg')?.outerHTML ?? '';
+    iniciarArrastrePaleta(e.nativeEvent, {
+      equipoId: equipo.id,
+      svgHtml,
+      onDropEnLienzo: (id, x, y) => {
+        agregar(id, x, y);
+        // Marca la flag para que el click que sigue al pointerup no vuelva
+        // a agregar el equipo (una vez es un item + otra al centro).
+        suprimirClickRef.current.suprimir = true;
+      },
+      anchoViewbox: 1000,
+      altoViewbox: 625,
+    });
+  };
+
+  const onClick = () => {
+    if (suprimirClickRef.current.suprimir) {
+      suprimirClickRef.current.suprimir = false;
+      return;
+    }
+    // Sin drag: click clasico agrega al centro.
+    agregar(equipo.id, 500, 312);
+  };
+
+  return (
+    <button
+      type="button"
+      className="ma-paleta__item"
+      onPointerDown={onPointerDown}
+      onClick={onClick}
+      aria-label={`${equipo.nombre[idioma]} (${equipo.nombre[idioma === 'es' ? 'en' : 'es']})`}
+      title={`${equipo.nombre.es} / ${equipo.nombre.en}`}
+    >
+      <span ref={svgRef}>
+        <IconoEquipo equipo={equipo} size={40} idioma={idioma} />
+      </span>
+      <span className="ma-paleta__nombre">{equipo.nombre[idioma]}</span>
+      <span className="ma-paleta__nombre-alt">
+        {equipo.nombre[idioma === 'es' ? 'en' : 'es']}
+      </span>
+    </button>
   );
 }

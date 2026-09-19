@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
 import interact from 'interactjs';
 import { EQUIPOS_POR_ID } from '@/icons/catalog';
 import { IconoEquipo } from './IconoEquipo';
@@ -177,10 +177,31 @@ export function Lienzo() {
       },
     });
 
+      // Pinch para hacer zoom en mobile / tablet (dos dedos).
+    const gestures = interact(raiz).gesturable({
+      listeners: {
+        move(event) {
+          if (!event.ds) return;
+          const zoomActual = useProyecto.getState().zoom;
+          useProyecto.getState().setZoom(zoomActual * (1 + event.ds));
+        },
+      },
+    });
+
     return () => {
       interactable.unset();
+      gestures.unset();
     };
   }, [mover, seleccionar]);
+
+  // Rueda del mouse = zoom (comportamiento pro esperado en canvas). Sin
+  // modificadores para no requerir Ctrl; el lienzo no scrolla por si mismo.
+  const onWheel = useCallback((evento: React.WheelEvent<HTMLDivElement>) => {
+    evento.preventDefault();
+    const zoomActual = useProyecto.getState().zoom;
+    const delta = evento.deltaY > 0 ? -0.08 : 0.08;
+    useProyecto.getState().setZoom(zoomActual + delta);
+  }, []);
 
   const enSel = new Set(seleccionadosIds);
 
@@ -189,7 +210,11 @@ export function Lienzo() {
   };
 
   return (
-    <div className="ma-lienzo-wrap" style={{ ['--zoom' as string]: zoom }}>
+    <div
+      className="ma-lienzo-wrap"
+      style={{ ['--zoom' as string]: zoom }}
+      onWheel={onWheel}
+    >
       <div
         ref={contenedor}
         className="ma-lienzo"
