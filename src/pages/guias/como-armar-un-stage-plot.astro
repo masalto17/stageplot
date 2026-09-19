@@ -1,0 +1,436 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const inicio = import.meta.env.BASE_URL;
+const url = new URL(Astro.url.pathname, Astro.site);
+const publicado = '2026-09-19';
+const modificado = '2026-09-19';
+const titulo = 'Como armar un stage plot: guia completa para bandas';
+const descripcion =
+  'Que es un stage plot, que informacion lleva, como se lee, y un paso a paso para armar el tuyo en menos de 15 minutos. Con ejemplo real de banda de rock argentina.';
+
+const faq = [
+  {
+    q: '¿Cual es la diferencia entre stage plot, input list y rider?',
+    a: 'El stage plot es el DIBUJO del escenario visto desde arriba: donde va cada instrumento, cada monitor y cada pedestal. El input list es la TABLA de canales: numero, nombre, microfono o DI, stand, +48V y notas. El rider tecnico es el DOCUMENTO completo que agrupa stage plot, input list y otros requerimientos (backline, monitoreo, luces, personal).',
+  },
+  {
+    q: '¿Cuando lo tengo que mandar al sonidista?',
+    a: 'Al menos 48 horas antes del show. En festivales, la produccion suele pedirlo con 7 dias de anticipacion. Mandarlo el mismo dia obliga al sonidista a improvisar y termina en un show sin monitoreo o con la cabeza del bajo saturando.',
+  },
+  {
+    q: '¿Que formato tiene que tener el archivo?',
+    a: 'PDF. Siempre PDF. El PNG se ve horrible impreso, el Word cambia el layout en cada compu y el JPG comprimido hace ilegibles los textos chicos. El PDF preserva el diseño y es el unico formato que todo sonidista abre sin preguntar.',
+  },
+  {
+    q: '¿Hace falta que sea a escala?',
+    a: 'No. Un stage plot no es un plano de arquitectura. Lo que importa es la posicion RELATIVA (que el bombo este mas atras que el cantante) y la orientacion (que quede claro donde esta el publico). Tres notas: marcar el frente del escenario, dejar los wings visibles, y no mezclar direcciones (todas las cabezas de mic apuntando en el mismo sentido).',
+  },
+  {
+    q: '¿Que pasa si mi banda cambia el line-up seguido?',
+    a: 'Armas UN stage plot por formacion tipo (trio, cuarteto, con teclado, con vientos) y los mandas segun el show. En MasAlto StagePlot tenes biblioteca multi-proyecto: duplicas la base, editas una version, y compartis el link con la formacion que toque esa noche.',
+  },
+  {
+    q: '¿Necesito saber usar Illustrator?',
+    a: 'No. Editores como MasAlto StagePlot te dan iconos precargados, canales automaticos y exportacion a PDF con un click. Illustrator servia hace 10 anos; hoy es sobreingeniear el problema.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      headline: titulo,
+      description: descripcion,
+      datePublished: publicado,
+      dateModified: modificado,
+      author: {
+        '@type': 'Organization',
+        name: 'MasAlto Producciones',
+        url: 'https://masalto.com.ar',
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'MasAlto Producciones',
+        url: 'https://masalto.com.ar',
+      },
+      mainEntityOfPage: url.href,
+      inLanguage: 'es-AR',
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faq.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Inicio', item: new URL(inicio, Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: 'Guias', item: new URL(`${inicio}guias/`, Astro.site).href },
+        { '@type': 'ListItem', position: 3, name: titulo, item: url.href },
+      ],
+    },
+  ],
+};
+---
+
+<BaseLayout title={titulo} description={descripcion}>
+  <script
+    slot="head-extra"
+    type="application/ld+json"
+    set:html={JSON.stringify(jsonLd)}
+  />
+
+  <article class="ma-guia">
+    <header class="ma-guia__header ma-contenedor">
+      <p class="ma-guia__migas ma-dato">
+        <a href={inicio}>Inicio</a> /
+        <a href={`${inicio}guias/`}>Guias</a> /
+        <span>Stage plot</span>
+      </p>
+      <h1>{titulo}</h1>
+      <p class="ma-guia__lead">
+        Todo lo que un musico argentino tiene que saber para armar el plano
+        del escenario y mandarlo al sonidista sin quedar como pichi.
+      </p>
+      <p class="ma-guia__meta ma-dato">
+        Publicado el {publicado} &middot; 9 min de lectura
+      </p>
+    </header>
+
+    <nav class="ma-guia__toc ma-contenedor" aria-label="Indice">
+      <h2>Indice</h2>
+      <ol>
+        <li><a href="#que-es">Que es un stage plot</a></li>
+        <li><a href="#por-que">Por que un rider sin stage plot no llega a ningun lado</a></li>
+        <li><a href="#partes">Que informacion lleva</a></li>
+        <li><a href="#como-se-lee">Como se lee: convenciones que todos usan</a></li>
+        <li><a href="#paso-a-paso">Paso a paso: armar el tuyo en 15 minutos</a></li>
+        <li><a href="#ejemplo">Ejemplo real: banda de rock con 5 integrantes</a></li>
+        <li><a href="#errores">Errores comunes que le arruinan el dia al sonidista</a></li>
+        <li><a href="#faq">Preguntas frecuentes</a></li>
+      </ol>
+    </nav>
+
+    <div class="ma-guia__cuerpo ma-contenedor">
+      <section id="que-es">
+        <h2>Que es un stage plot</h2>
+        <p>
+          Un <strong>stage plot</strong> es el dibujo del escenario visto desde
+          arriba, mostrando donde va cada integrante de la banda, cada
+          instrumento, cada amplificador, cada microfono y cada monitor. Es
+          la pieza visual que le dice al sonidista, al escenografo y al equipo
+          de produccion como se distribuye la banda en el espacio antes de
+          empezar el soundcheck.
+        </p>
+        <p>
+          No es un plano tecnico ni una obra de arte. Es una herramienta de
+          comunicacion. Su objetivo es <em>que otro entienda tu setup en 30
+          segundos, sin llamarte a preguntar</em>.
+        </p>
+      </section>
+
+      <section id="por-que">
+        <h2>Por que un rider sin stage plot no llega a ningun lado</h2>
+        <p>
+          Cuando el sonidista abre el rider tecnico de tu banda, tiene 3
+          preguntas urgentes:
+        </p>
+        <ol>
+          <li><strong>¿Cuantos canales tengo que abrir?</strong> Eso lo responde el input list.</li>
+          <li><strong>¿Que microfonos y stands necesito de mi backline?</strong> Eso lo responde el input list.</li>
+          <li><strong>¿Donde va cada cosa en el escenario?</strong> Eso lo responde <em>solo</em> el stage plot.</li>
+        </ol>
+        <p>
+          Sin stage plot, el sonidista y el stage manager se lo tienen que
+          preguntar a vos, en el momento en que llegas al lugar. Cinco minutos
+          menos de soundcheck para acomodar cables. Un monitor que quedo del
+          otro lado del baterista porque nadie sabia que ese lo pedia el
+          cantante. Un cable de bajo cruzando toda la tarima porque el ampli
+          quedo en el lugar equivocado.
+        </p>
+        <p>
+          Un stage plot bien armado te ahorra 15 minutos de soundcheck y
+          te da a vos, como banda, la primera impresion de "esta gente sabe
+          lo que hace". Eso vale plata, literalmente: los sonidistas y las
+          producciones vuelven a llamar a las bandas que hacen que su trabajo
+          sea facil.
+        </p>
+      </section>
+
+      <section id="partes">
+        <h2>Que informacion lleva</h2>
+        <p>Los elementos que un stage plot serio incluye siempre son:</p>
+        <ul>
+          <li>
+            <strong>Frente del escenario</strong>. La linea que da al publico.
+            Va en la parte de abajo del dibujo, marcada explicita ("Publico" o
+            "Frente"). Sin esto, el sonidista no sabe si te confundiste el
+            orden.
+          </li>
+          <li>
+            <strong>Backline</strong>. Amplificadores de guitarra y bajo,
+            teclados, bateria completa. Con nombre corto de que es cada uno
+            (Gtr izq, Bajo).
+          </li>
+          <li>
+            <strong>Microfonos y pedestales</strong>. Uno por cada fuente que
+            se captura. Si algo va por DI y no por mic, marcarlo tambien (los
+            teclados casi siempre van por DI).
+          </li>
+          <li>
+            <strong>Monitores</strong>. Cuñas de piso, in-ear, sidefills. La
+            ubicacion del monitor dice quien lo escucha.
+          </li>
+          <li>
+            <strong>Etiquetas por integrante</strong>. "Cantante", "Coro 1",
+            "Guitarra izq". Sin esto, el sonidista adivina y falla.
+          </li>
+          <li>
+            <strong>Escala de tarima si es relevante</strong>. Si tu banda usa
+            plataformas elevadas para la bateria, dibujalas.
+          </li>
+        </ul>
+      </section>
+
+      <section id="como-se-lee">
+        <h2>Como se lee: convenciones que todos usan</h2>
+        <p>
+          Estas son las reglas no escritas que un stage plot serio respeta.
+          Nadie te va a echar un show por romperlas, pero cada una que rompas
+          suma medio minuto de confusion al soundcheck.
+        </p>
+        <ul>
+          <li>
+            <strong>El frente del escenario va abajo.</strong> El publico esta
+            "hacia el lector". Arriba es el fondo (donde suele ir la bateria).
+          </li>
+          <li>
+            <strong>Izquierda / derecha desde el punto de vista del PUBLICO.</strong>
+            No desde el escenario. "Guitarra derecha" es el guitarrista que el
+            publico ve a su derecha.
+          </li>
+          <li>
+            <strong>Los iconos son vistos desde arriba.</strong> Un bombo se
+            dibuja como un circulo (no como un rectangulo de perfil).
+          </li>
+          <li>
+            <strong>Un icono, una etiqueta.</strong> Etiqueta debajo o al lado,
+            nunca encima. Fuente sans-serif, tamano legible cuando el PDF se
+            imprime en A4.
+          </li>
+          <li>
+            <strong>Blanco y negro con un color de acento.</strong> Un rider
+            que sale a color en la impresora del lugar es lujo. El acento sirve
+            para marcar cosas criticas (el frente del escenario, un monitor
+            personalizado, un cable especial).
+          </li>
+        </ul>
+      </section>
+
+      <section id="paso-a-paso">
+        <h2>Paso a paso: armar el tuyo en 15 minutos</h2>
+        <ol>
+          <li>
+            <strong>Empezá por el backline fijo.</strong> Bateria centrada al
+            fondo, amplis a los costados. Es el ancla del escenario.
+          </li>
+          <li>
+            <strong>Ubica a los musicos.</strong> El cantante al frente al
+            centro. Los coros a los costados. Guitarra y bajo a los costados
+            del cantante segun a que lado toca cada uno.
+          </li>
+          <li>
+            <strong>Sumá los microfonos.</strong> Uno por cada fuente. Vocal
+            para cada cantante. Kick, snare, overheads para la bateria. Un mic
+            frente a cada ampli.
+          </li>
+          <li>
+            <strong>Marca los monitores.</strong> Uno por integrante como
+            minimo. Los cantantes suelen pedir dos.
+          </li>
+          <li>
+            <strong>Etiqueta todo.</strong> "Cantante", "Bajo", "Gtr izq".
+            Ningun icono anonimo.
+          </li>
+          <li>
+            <strong>Chequea el frente del escenario.</strong> Que la linea roja
+            (o el texto "Frente") este marcada explicita.
+          </li>
+          <li>
+            <strong>Exporta a PDF.</strong> Con el input list en la segunda
+            pagina.
+          </li>
+        </ol>
+        <p class="ma-callout">
+          <strong>Tip.</strong> Si nunca hiciste un stage plot, empeza con una
+          plantilla precargada. En <a href={`${inicio}crear/#p=rock`}>MasAlto
+          StagePlot</a> tenes 4 plantillas por genero (rock, solista, DJ,
+          folklore) que ya vienen con los canales del sonidista mapeados. Solo
+          moves los iconos a la posicion real de tu banda.
+        </p>
+      </section>
+
+      <section id="ejemplo">
+        <h2>Ejemplo real: banda de rock con 5 integrantes</h2>
+        <p>
+          Este es el esquema tipico de una banda de rock argentina: bateria,
+          bajo, dos guitarras, cantante. Tres monitores de piso.
+        </p>
+        <div class="ma-guia__figura">
+          <svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" aria-label="Stage plot ejemplo de banda de rock">
+            {/* Fondo con wings sutiles */}
+            <rect x="0" y="0" width="800" height="500" fill="#fafafa" stroke="rgba(0,0,0,0.12)" stroke-width="1" />
+            <rect x="0" y="0" width="60" height="500" fill="rgba(0,0,0,0.04)" />
+            <rect x="740" y="0" width="60" height="500" fill="rgba(0,0,0,0.04)" />
+
+            {/* Guias tercios */}
+            <line x1="266" y1="0" x2="266" y2="500" stroke="rgba(0,0,0,0.06)" />
+            <line x1="533" y1="0" x2="533" y2="500" stroke="rgba(0,0,0,0.06)" />
+
+            {/* Batería centrada al fondo */}
+            <g transform="translate(400,140)">
+              <circle r="35" fill="rgba(0,0,0,0.08)" stroke="black" stroke-width="2" />
+              <circle r="6" fill="black" />
+              <text y="55" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700">Bateria</text>
+            </g>
+
+            {/* Amp bajo derecha */}
+            <g transform="translate(600,160)">
+              <rect x="-30" y="-30" width="60" height="60" fill="rgba(0,0,0,0.08)" stroke="black" stroke-width="2" rx="4" />
+              <text y="48" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700">Bajo</text>
+            </g>
+
+            {/* Amp gtr izquierda */}
+            <g transform="translate(200,160)">
+              <rect x="-30" y="-30" width="60" height="60" fill="rgba(0,0,0,0.08)" stroke="black" stroke-width="2" rx="4" />
+              <text y="48" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700">Gtr 1</text>
+            </g>
+
+            {/* Amp gtr derecha */}
+            <g transform="translate(650,260)">
+              <rect x="-30" y="-30" width="60" height="60" fill="rgba(0,0,0,0.08)" stroke="black" stroke-width="2" rx="4" />
+              <text y="48" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700">Gtr 2</text>
+            </g>
+
+            {/* Mic cantante centro */}
+            <g transform="translate(400,340)">
+              <circle r="15" fill="none" stroke="black" stroke-width="2" />
+              <line x1="0" y1="15" x2="0" y2="35" stroke="black" stroke-width="2" />
+              <text y="60" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700">Cantante</text>
+            </g>
+
+            {/* Coro izq */}
+            <g transform="translate(280,320)">
+              <circle r="12" fill="none" stroke="black" stroke-width="2" />
+              <line x1="0" y1="12" x2="0" y2="30" stroke="black" stroke-width="2" />
+              <text y="52" text-anchor="middle" font-family="sans-serif" font-size="11">Coro 1</text>
+            </g>
+            <g transform="translate(520,320)">
+              <circle r="12" fill="none" stroke="black" stroke-width="2" />
+              <line x1="0" y1="12" x2="0" y2="30" stroke="black" stroke-width="2" />
+              <text y="52" text-anchor="middle" font-family="sans-serif" font-size="11">Coro 2</text>
+            </g>
+
+            {/* Monitores al frente */}
+            <g transform="translate(280,440)">
+              <polygon points="-25,20 -15,-10 15,-10 25,20" fill="rgba(0,0,0,0.08)" stroke="black" stroke-width="2" />
+              <text y="35" text-anchor="middle" font-family="sans-serif" font-size="10">Mon 1</text>
+            </g>
+            <g transform="translate(400,440)">
+              <polygon points="-25,20 -15,-10 15,-10 25,20" fill="rgba(0,0,0,0.08)" stroke="black" stroke-width="2" />
+              <text y="35" text-anchor="middle" font-family="sans-serif" font-size="10">Mon 2</text>
+            </g>
+            <g transform="translate(520,440)">
+              <polygon points="-25,20 -15,-10 15,-10 25,20" fill="rgba(0,0,0,0.08)" stroke="black" stroke-width="2" />
+              <text y="35" text-anchor="middle" font-family="sans-serif" font-size="10">Mon 3</text>
+            </g>
+
+            {/* Frente del escenario */}
+            <line x1="40" y1="480" x2="760" y2="480" stroke="#E30613" stroke-width="3" />
+            <text x="400" y="495" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="800" fill="#E30613" letter-spacing="2">FRENTE DEL ESCENARIO</text>
+          </svg>
+          <p class="ma-guia__figura-pie">
+            Setup tipo: bateria centrada al fondo, bajo a la derecha, dos
+            guitarras (una a cada lado), cantante al frente al centro, coros
+            a los lados, tres monitores al frente.
+          </p>
+        </div>
+        <p>
+          Este stage plot corresponde a un input list de 18 canales
+          aproximadamente: 7 para bateria (kick, snare top, snare bottom,
+          hi-hat, dos overheads, ride), 2 para bajo (DI + ampli), 2 para
+          guitarras (una c/u), 1 para el cantante, 2 para los coros, 3
+          monitores. Todo eso lo arma solo un editor moderno como
+          <a href={`${inicio}crear/#p=rock`}>MasAlto StagePlot</a>, sin que
+          vos tengas que pensar en la numeracion.
+        </p>
+      </section>
+
+      <section id="errores">
+        <h2>Errores comunes que le arruinan el dia al sonidista</h2>
+        <ul>
+          <li>
+            <strong>No marcar el frente del escenario.</strong> El sonidista
+            tiene que rotar mentalmente tu dibujo para saber donde apunta cada
+            cosa. Marca el frente con una linea gruesa, un texto "Frente" y
+            si podes, otro color.
+          </li>
+          <li>
+            <strong>Poner los amplis atras y no marcarlos como "ampli", solo
+            como "guitarra".</strong> "Guitarra" puede ser el amplificador o
+            el musico. Distinguilos: "Gtr" para musico, "Amp Gtr" para el
+            ampli.
+          </li>
+          <li>
+            <strong>Un solo monitor para tres cantantes.</strong> Cada persona
+            que canta necesita su propio monitor. Sino, tenes que hablar con
+            el sonidista antes del show y negociar.
+          </li>
+          <li>
+            <strong>Cero notas.</strong> Si tu bajista prefiere no llevar DI
+            (esto pasa en algunos casos), aclaralo en el plot. Si el kick va
+            con un mic determinado, aclaralo.
+          </li>
+          <li>
+            <strong>Un stage plot de hace 3 años que no matchea con la banda
+            actual.</strong> Actualizalo cada vez que agregues o saques un
+            integrante.
+          </li>
+        </ul>
+      </section>
+
+      <section id="faq">
+        <h2>Preguntas frecuentes</h2>
+        {faq.map((f) => (
+          <div class="ma-guia__faq">
+            <h3>{f.q}</h3>
+            <p>{f.a}</p>
+          </div>
+        ))}
+      </section>
+
+      <aside class="ma-guia__cta">
+        <h2>Arma tu stage plot ahora</h2>
+        <p>
+          Editor gratuito con 31 iconos, canales automaticos, input list
+          detallada, 4 plantillas por genero, export PDF y compartir por link.
+          Sin registro, funciona offline.
+        </p>
+        <div class="ma-hero__acciones">
+          <a class="ma-boton" href={`${inicio}crear/#p=rock`}>Empezar con plantilla banda</a>
+          <a class="ma-boton ma-boton--secundario" href={`${inicio}crear/`}>Empezar de cero</a>
+        </div>
+      </aside>
+
+      <p class="ma-guia__seguir">
+        Seguir leyendo:
+        <a href={`${inicio}guias/que-es-input-list/`}>Input list: que es y por que la pide el sonidista</a>.
+      </p>
+    </div>
+  </article>
+</BaseLayout>

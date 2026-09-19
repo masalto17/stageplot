@@ -1,0 +1,62 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+interface EntradaGuia {
+  slug: string;
+  titulo: string;
+  descripcion: string;
+  minutosLectura: number;
+  publicado: string;
+}
+
+const GUIAS: EntradaGuia[] = [
+  {
+    slug: 'como-armar-un-stage-plot',
+    titulo: 'Como armar un stage plot: guia completa para bandas',
+    descripcion:
+      'Que es un stage plot, que informacion lleva, como se lee y como armar el tuyo en 15 minutos. Con ejemplo real de banda de rock argentina.',
+    minutosLectura: 9,
+    publicado: '2026-09-19',
+  },
+  {
+    slug: 'que-es-input-list',
+    titulo: 'Input list: que es y por que la pide el sonidista',
+    descripcion:
+      'El otro papel que va con el stage plot. Que microfono va con que instrumento, tipos de pedestal, senal, phantom power y notas por canal.',
+    minutosLectura: 6,
+    publicado: '2026-09-19',
+  },
+];
+
+const inicio = import.meta.env.BASE_URL;
+---
+
+<BaseLayout
+  title="Guias tecnicas para stage plots y sonido en vivo"
+  description="Aprende a armar stage plots, input lists y riders tecnicos. Guias practicas para bandas, sonidistas y productores en Argentina."
+>
+  <section class="ma-hero ma-contenedor">
+    <h1>Guias tecnicas</h1>
+    <p>
+      Todo lo que un musico argentino tiene que saber para llegar preparado al
+      soundcheck. Escrito por gente que trabaja en el rider, no por generadores
+      de contenido.
+    </p>
+  </section>
+
+  <section class="ma-guias ma-contenedor">
+    <ul class="ma-guias__lista">
+      {GUIAS.map((g) => (
+        <li>
+          <a href={`${inicio}guias/${g.slug}/`}>
+            <h2>{g.titulo}</h2>
+            <p>{g.descripcion}</p>
+            <p class="ma-guias__meta ma-dato">
+              {g.minutosLectura} min de lectura &middot; {g.publicado}
+            </p>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>

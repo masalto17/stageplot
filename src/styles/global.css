@@ -1067,3 +1067,238 @@ button:focus-visible {
   pointer-events: none;
   z-index: 4;
 }
+
+/* ---------- Guias (long-form) ---------- */
+
+.ma-guia {
+  padding: 40px 0 80px;
+}
+
+.ma-guia__header {
+  max-width: 780px;
+  margin: 0 auto 32px;
+}
+
+.ma-guia__migas {
+  color: var(--ma-texto-suave);
+  font-size: 0.8rem;
+  margin: 0 0 12px;
+}
+
+.ma-guia__migas a { color: var(--ma-texto-suave); text-decoration: none; }
+.ma-guia__migas a:hover { color: var(--ma-rojo); }
+
+.ma-guia h1 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  margin: 0 0 16px;
+  line-height: 1.15;
+}
+
+.ma-guia__lead {
+  font-size: 1.15rem;
+  color: var(--ma-texto-suave);
+  margin: 0 0 12px;
+  line-height: 1.55;
+}
+
+.ma-guia__meta {
+  color: var(--ma-texto-suave);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.ma-guia__toc {
+  max-width: 780px;
+  margin: 24px auto;
+  padding: 20px 24px;
+  background: var(--ma-superficie);
+  border-radius: var(--ma-radio);
+  border: 1px solid var(--ma-borde);
+}
+
+.ma-guia__toc h2 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ma-texto-suave);
+  margin: 0 0 10px;
+  font-weight: 800;
+}
+
+.ma-guia__toc ol {
+  margin: 0;
+  padding-left: 20px;
+  columns: 2;
+  column-gap: 24px;
+}
+
+.ma-guia__toc li {
+  margin-bottom: 6px;
+  break-inside: avoid;
+  font-size: 0.95rem;
+}
+
+.ma-guia__toc a {
+  color: var(--ma-texto);
+  text-decoration: none;
+}
+
+.ma-guia__toc a:hover { color: var(--ma-rojo); text-decoration: underline; }
+
+.ma-guia__cuerpo {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.ma-guia__cuerpo section {
+  margin: 40px 0;
+  scroll-margin-top: 24px;
+}
+
+.ma-guia__cuerpo h2 {
+  font-size: 1.6rem;
+  margin: 0 0 16px;
+  line-height: 1.2;
+}
+
+.ma-guia__cuerpo h3 {
+  font-size: 1.1rem;
+  margin: 20px 0 8px;
+}
+
+.ma-guia__cuerpo p {
+  font-size: 1.02rem;
+  line-height: 1.7;
+  margin: 0 0 14px;
+}
+
+.ma-guia__cuerpo ul,
+.ma-guia__cuerpo ol {
+  margin: 0 0 16px;
+  padding-left: 24px;
+}
+
+.ma-guia__cuerpo li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.ma-guia__cuerpo a {
+  color: var(--ma-rojo);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.ma-callout {
+  padding: 14px 16px;
+  border-left: 3px solid var(--ma-rojo);
+  background: var(--ma-rojo-suave);
+  border-radius: 0 var(--ma-radio-chico) var(--ma-radio-chico) 0;
+  font-size: 0.98rem;
+}
+
+.ma-guia__figura {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid var(--ma-borde);
+  border-radius: var(--ma-radio);
+  background: var(--ma-blanco);
+}
+
+.ma-guia__figura svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ma-guia__figura-pie {
+  margin: 12px 0 0;
+  color: var(--ma-texto-suave);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.ma-guia__tabla-wrap { overflow-x: auto; margin: 16px 0; }
+
+.ma-guia__tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 640px;
+}
+
+.ma-guia__tabla th {
+  padding: 10px 12px;
+  text-align: left;
+  background: var(--ma-superficie);
+  border-bottom: 1px solid var(--ma-borde);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ma-texto-suave);
+  font-weight: 800;
+}
+
+.ma-guia__tabla td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ma-borde);
+}
+
+.ma-guia__faq {
+  margin: 24px 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--ma-borde);
+}
+
+.ma-guia__faq:first-of-type { border-top: 0; padding-top: 0; }
+
+.ma-guia__faq h3 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.ma-guia__cta {
+  margin: 60px 0 20px;
+  padding: 32px 28px;
+  background: var(--ma-negro);
+  color: var(--ma-blanco);
+  border-radius: var(--ma-radio);
+}
+
+.ma-guia__cta h2 { color: var(--ma-blanco); margin: 0 0 12px; }
+.ma-guia__cta p { color: rgba(255,255,255,0.85); margin: 0 0 20px; font-size: 1rem; }
+.ma-guia__cta .ma-boton--secundario {
+  background: transparent;
+  color: var(--ma-blanco);
+  border-color: rgba(255,255,255,0.4);
+}
+
+.ma-guia__seguir {
+  margin: 24px 0 0;
+  padding: 16px 20px;
+  border: 1px dashed var(--ma-borde-fuerte);
+  border-radius: var(--ma-radio-chico);
+  font-size: 0.95rem;
+  color: var(--ma-texto-suave);
+}
+
+.ma-guia__seguir a {
+  color: var(--ma-rojo);
+  font-weight: 700;
+  margin-left: 6px;
+}
+
+/* Index de guias */
+.ma-guias { padding: 20px 0 60px; }
+.ma-guias__lista { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
+.ma-guias__lista li { border: 1px solid var(--ma-borde); border-radius: var(--ma-radio); transition: border-color 0.12s, box-shadow 0.12s; }
+.ma-guias__lista li:hover { border-color: var(--ma-rojo); box-shadow: var(--ma-sombra); }
+.ma-guias__lista a { display: block; padding: 24px 28px; text-decoration: none; color: inherit; }
+.ma-guias__lista h2 { margin: 0 0 10px; font-size: 1.3rem; }
+.ma-guias__lista p { margin: 0 0 8px; color: var(--ma-texto); font-size: 1rem; }
+.ma-guias__meta { color: var(--ma-texto-suave); font-size: 0.85rem; margin: 0; }
+
+@media (max-width: 640px) {
+  .ma-guia__toc ol { columns: 1; }
+}

@@ -1,0 +1,288 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const inicio = import.meta.env.BASE_URL;
+const url = new URL(Astro.url.pathname, Astro.site);
+const publicado = '2026-09-19';
+const modificado = '2026-09-19';
+const titulo = 'Input list: que es y por que la pide el sonidista';
+const descripcion =
+  'El otro papel que va con el stage plot. Que microfono o DI se usa por canal, tipos de pedestal, phantom power y notas. Ejemplo real y errores comunes.';
+
+const faq = [
+  {
+    q: '¿Un input list y un canal count son lo mismo?',
+    a: 'No exactamente. El "canal count" es solo un numero: "necesito 24 canales". El input list detalla que hay en cada canal: canal 1 kick, canal 2 snare top, canal 3 snare bottom, etc. En festivales pequeños pueden pedir solo canal count; en produccion seria siempre input list completa.',
+  },
+  {
+    q: '¿Que pasa si no se el modelo de mic que va con cada instrumento?',
+    a: 'Poner "sugerencia" o dejar el campo abierto. El sonidista del lugar tiene su propio criterio y muchas veces prefiere trabajar con los microfonos que conoce. Los input list mas prolijos ponen 2 opciones separadas por "/": "SM57 / Beta 57". Si no sabes, dejalo vacio; el sonidista lo llena.',
+  },
+  {
+    q: '¿La numeracion de canales importa?',
+    a: 'Muchisimo. Los sonidistas experimentados esperan un orden: bateria de abajo hacia arriba (kick, snare, hi-hat, toms, overheads), luego bajo, luego guitarras, luego teclados, luego vientos, luego voces al final. Romper ese orden hace que el sonidista tenga que buscar el canal en cada cambio. En MasAlto StagePlot los canales se numeran solos siguiendo esta convencion.',
+  },
+  {
+    q: '¿Que quiere decir +48V?',
+    a: 'Phantom power. Es una alimentacion electrica de 48 voltios que la consola manda por el mismo cable XLR y que necesitan la mayoria de los microfonos de condensador y las DI activas. Marcalo con "Si" o un tilde en la columna +48V. Un microfono dinamico (SM57, SM58, Beta 52) NO lo necesita; enviarselo no rompe nada pero es innecesario.',
+  },
+  {
+    q: '¿Que va en la columna "nota"?',
+    a: 'Cualquier cosa que el sonidista necesita saber y no entra en otra columna: "sin gate", "usa mi propio mic", "monitor mix 3", "canal reservado para track de sinte", "gancho de fase invertido". Las notas cortas y especificas son oro. Las notas del tipo "sonar bien" no sirven a nadie.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      headline: titulo,
+      description: descripcion,
+      datePublished: publicado,
+      dateModified: modificado,
+      author: { '@type': 'Organization', name: 'MasAlto Producciones', url: 'https://masalto.com.ar' },
+      publisher: { '@type': 'Organization', name: 'MasAlto Producciones', url: 'https://masalto.com.ar' },
+      mainEntityOfPage: url.href,
+      inLanguage: 'es-AR',
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faq.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Inicio', item: new URL(inicio, Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: 'Guias', item: new URL(`${inicio}guias/`, Astro.site).href },
+        { '@type': 'ListItem', position: 3, name: titulo, item: url.href },
+      ],
+    },
+  ],
+};
+
+// Ejemplo de input list para render.
+const ejemplo = [
+  ['1', 'Kick', 'Microfono', '', 'Beta 52 / D6', 'Corto'],
+  ['2', 'Snare arriba', 'Microfono', '', 'SM57', 'Corto'],
+  ['3', 'Snare abajo', 'Microfono', '', 'SM57', 'Corto'],
+  ['4', 'Hi-hat', 'Microfono', '+48V', 'SM81 / KM184', 'Boom'],
+  ['5', 'Tom', 'Microfono', '', 'e604', 'Clip'],
+  ['6', 'Tom de piso', 'Microfono', '', 'e604 / D2', 'Clip'],
+  ['7', 'Ride', 'Microfono', '+48V', 'SM81', 'Boom'],
+  ['8', 'OH L', 'Microfono', '+48V', 'KM184', 'Boom'],
+  ['9', 'OH R', 'Microfono', '+48V', 'KM184', 'Boom'],
+  ['10', 'Bajo DI', 'Linea', '', 'DI activa', '—'],
+  ['11', 'Ampli bajo', 'Microfono', '', 'Beta 52', 'Corto'],
+  ['12', 'Gtr izq', 'Microfono', '', 'SM57', 'Corto'],
+  ['13', 'Gtr der', 'Microfono', '', 'SM57', 'Corto'],
+  ['14', 'Cantante', 'Microfono', '', 'SM58 / Beta 58', 'Boom'],
+  ['15', 'Coro 1', 'Microfono', '', 'SM58', 'Boom'],
+  ['16', 'Coro 2', 'Microfono', '', 'SM58', 'Boom'],
+];
+---
+
+<BaseLayout title={titulo} description={descripcion}>
+  <script
+    slot="head-extra"
+    type="application/ld+json"
+    set:html={JSON.stringify(jsonLd)}
+  />
+
+  <article class="ma-guia">
+    <header class="ma-guia__header ma-contenedor">
+      <p class="ma-guia__migas ma-dato">
+        <a href={inicio}>Inicio</a> /
+        <a href={`${inicio}guias/`}>Guias</a> /
+        <span>Input list</span>
+      </p>
+      <h1>{titulo}</h1>
+      <p class="ma-guia__lead">
+        El stage plot dice DONDE va cada cosa; el input list dice QUE microfono
+        o DI usar en cada canal, con que pedestal y con que nota. Sin el
+        segundo, el primero es un dibujo bonito.
+      </p>
+      <p class="ma-guia__meta ma-dato">
+        Publicado el {publicado} &middot; 6 min de lectura
+      </p>
+    </header>
+
+    <nav class="ma-guia__toc ma-contenedor" aria-label="Indice">
+      <h2>Indice</h2>
+      <ol>
+        <li><a href="#que-es">Que es un input list</a></li>
+        <li><a href="#columnas">Anatomia: las columnas que siempre lleva</a></li>
+        <li><a href="#ejemplo">Ejemplo: input list de banda de rock</a></li>
+        <li><a href="#diferencia">Diferencia con stage plot y rider</a></li>
+        <li><a href="#errores">Errores comunes al armar la primera</a></li>
+        <li><a href="#faq">Preguntas frecuentes</a></li>
+      </ol>
+    </nav>
+
+    <div class="ma-guia__cuerpo ma-contenedor">
+      <section id="que-es">
+        <h2>Que es un input list</h2>
+        <p>
+          Un <strong>input list</strong> (o "channel list") es la tabla que le
+          dice al sonidista, canal por canal, que va a entrar a su consola. Es
+          la respuesta detallada a la pregunta "¿cuantos canales tengo que
+          abrir y que va en cada uno?".
+        </p>
+        <p>
+          El sonidista recibe el input list, mira su consola, y en cinco
+          minutos tiene todo etiquetado, con la ganancia estimada, con el
+          phantom encendido donde corresponde, y con los buses de monitores
+          asignados. Sin input list, cada canal es una sorpresa y el
+          soundcheck se convierte en un juego de "adivina que sonido tenes que
+          calibrar".
+        </p>
+      </section>
+
+      <section id="columnas">
+        <h2>Anatomia: las columnas que siempre lleva</h2>
+        <p>Un input list minimo pero utilizable tiene estas columnas:</p>
+        <ul>
+          <li><strong>#</strong>. El numero del canal en el orden que se abren.</li>
+          <li><strong>Canal</strong>. Nombre corto y claro: "Kick", "Snare top", "Bajo DI", "Cantante".</li>
+          <li><strong>Senal</strong>. Microfono / Linea / Inalambrico / Monitor. Le dice al sonidista si el canal va a XLR, si es DI, si es wireless.</li>
+          <li><strong>+48V</strong>. Marcado si necesita phantom power. Micros dinamicos y DI pasivas van sin.</li>
+          <li><strong>Mic / DI</strong>. El modelo sugerido. "SM57", "Beta 52 / D6", "DI activa". Dos modelos separados por "/" es la practica normal, para dar al sonidista una segunda opcion si el primero no esta.</li>
+          <li><strong>Pedestal</strong>. Recto (voces), boom (overheads, coros), corto (bombo, amp de guitarra), clip (toms, vientos), suelo (cajon).</li>
+        </ul>
+        <p>
+          Input lists profesionales suman columnas para <strong>fase</strong>
+          (invertida o no, con el simbolo Ø) y <strong>nota</strong>
+          (comentarios especificos por canal).
+        </p>
+      </section>
+
+      <section id="ejemplo">
+        <h2>Ejemplo: input list de banda de rock</h2>
+        <p>
+          Esta es una input list tipica para una banda de rock argentina de 5
+          integrantes. Es la salida real que produce
+          <a href={`${inicio}crear/#p=rock`}>MasAlto StagePlot</a> con la
+          plantilla de banda:
+        </p>
+        <div class="ma-guia__tabla-wrap">
+          <table class="ma-guia__tabla">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Canal</th>
+                <th>Senal</th>
+                <th>+48V</th>
+                <th>Mic / DI</th>
+                <th>Pedestal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ejemplo.map((fila) => (
+                <tr>{fila.map((c, i) => <td class={i === 0 ? 'ma-dato' : ''}>{c}</td>)}</tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="ma-callout">
+          <strong>Notas del ejemplo.</strong> Los overheads y el hi-hat llevan
+          phantom porque son condensadores. El snare tiene dos canales (top y
+          bottom) para que el sonidista sume los dos y controle el ataque.
+          Los amps de guitarra van con SM57 corto porque un boom es exceso.
+          El bajo tiene DOS canales: DI + microfoneo del ampli, para que el
+          sonidista pueda mezclar el bottom limpio del DI con el "cuerpo" del
+          ampli. Esto es standard.
+        </p>
+      </section>
+
+      <section id="diferencia">
+        <h2>Diferencia con stage plot y rider</h2>
+        <p>
+          Los tres documentos van juntos, pero sirven para cosas distintas.
+        </p>
+        <ul>
+          <li>
+            <strong>Stage plot</strong>: dibujo del escenario visto desde
+            arriba. Responde "donde va cada cosa". Le sirve al stage manager,
+            al equipo de tarima y al sonidista para el posicionamiento.
+            <a href={`${inicio}guias/como-armar-un-stage-plot/`}>Guia completa aca</a>.
+          </li>
+          <li>
+            <strong>Input list</strong>: tabla de canales. Responde "que
+            entra a la consola". Le sirve al sonidista y al asistente de
+            escenario para el patcheo y la ganancia.
+          </li>
+          <li>
+            <strong>Rider tecnico</strong>: documento paraguas que agrupa
+            stage plot, input list, requerimientos de backline (que trae el
+            venue), requerimientos de monitoreo (in-ear, wedge, cantidad),
+            requerimientos de luces, y a veces hospitalidad. Es lo que se
+            manda a la produccion del festival o del lugar.
+          </li>
+        </ul>
+      </section>
+
+      <section id="errores">
+        <h2>Errores comunes al armar la primera</h2>
+        <ul>
+          <li>
+            <strong>Olvidar el snare bottom.</strong> Si tu redoblante va a
+            sonar contra un sonidista bueno, va con dos canales (top + bottom).
+            Uno solo esta ok solo si el sonidista te lo pidio asi.
+          </li>
+          <li>
+            <strong>No aclarar el DI del bajo.</strong> Bajo DI es un canal
+            distinto del amp de bajo microfoneado. Ambos van al mismo tiempo.
+          </li>
+          <li>
+            <strong>Poner un microfono raro sin dar alternativa.</strong> Si
+            pedis "solo funciona con Beta 91A" y el sonidista del lugar tiene
+            un SM57, el show sigue con SM57. Dar una alternativa mostrando
+            criterio: "Beta 91A / SM57".
+          </li>
+          <li>
+            <strong>Numerar los canales sin logica.</strong> Bateria, bajo,
+            guitarras, teclados, vientos, voces, en ese orden. Nunca cantante
+            en canal 1 porque el sonidista no encuentra el kick despues.
+          </li>
+          <li>
+            <strong>Escribir la lista en un mail.</strong> Va en el mismo PDF
+            que el stage plot. Un mail se pierde entre otros 40.
+          </li>
+        </ul>
+      </section>
+
+      <section id="faq">
+        <h2>Preguntas frecuentes</h2>
+        {faq.map((f) => (
+          <div class="ma-guia__faq">
+            <h3>{f.q}</h3>
+            <p>{f.a}</p>
+          </div>
+        ))}
+      </section>
+
+      <aside class="ma-guia__cta">
+        <h2>Arma tu input list en 5 minutos</h2>
+        <p>
+          El editor toma tu stage plot y arma la input list sola. Cada
+          instrumento aporta sus canales por defecto (mic, stand, phantom).
+          Vos editas lo que necesitas y exportas el PDF apaisado con las 8
+          columnas de un input list serio.
+        </p>
+        <div class="ma-hero__acciones">
+          <a class="ma-boton" href={`${inicio}crear/#p=rock`}>Empezar con plantilla banda</a>
+          <a class="ma-boton ma-boton--secundario" href={`${inicio}crear/`}>Empezar de cero</a>
+        </div>
+      </aside>
+
+      <p class="ma-guia__seguir">
+        Seguir leyendo:
+        <a href={`${inicio}guias/como-armar-un-stage-plot/`}>Como armar un stage plot: guia completa para bandas</a>.
+      </p>
+    </div>
+  </article>
+</BaseLayout>
