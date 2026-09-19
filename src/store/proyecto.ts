@@ -96,7 +96,8 @@ export const PASO_GRILLA: Record<ResolucionGrilla, number> = {
 };
 
 interface EstadoUI {
-  seleccionadoId: string | null;
+  /** Ids de los instrumentos seleccionados. Multi-seleccion nativa. */
+  seleccionadosIds: readonly string[];
   idioma: Idioma;
   grilla: ResolucionGrilla;
   /** Zoom del lienzo (1 = 100%). */
@@ -115,6 +116,9 @@ export interface EstadoProyecto extends EstadoUI {
   traerAlFrente: (id: string) => void;
   enviarAlFondo: (id: string) => void;
   seleccionar: (id: string | null) => void;
+  alternarSeleccion: (id: string) => void;
+  seleccionarVarios: (ids: readonly string[]) => void;
+  seleccionarTodos: () => void;
   cargarProyecto: (proyecto: Proyecto) => void;
   renombrar: (nombre: string) => void;
   reiniciar: () => void;
@@ -155,7 +159,7 @@ export const useProyecto = create<EstadoProyecto>()(
   temporal(
     (set) => ({
       proyecto: proyectoVacio(),
-      seleccionadoId: null,
+      seleccionadosIds: [],
       idioma: typeof window === 'undefined' ? 'es' : idiomaInicial(),
       grilla: 'media',
       zoom: 1,
@@ -181,7 +185,7 @@ export const useProyecto = create<EstadoProyecto>()(
               },
             ],
           },
-          seleccionadoId: id,
+          seleccionadosIds: [id],
         }));
         return id;
       },
@@ -232,7 +236,7 @@ export const useProyecto = create<EstadoProyecto>()(
               },
             ],
           },
-          seleccionadoId: nid,
+          seleccionadosIds: [nid],
         }));
         return nid;
       },
@@ -295,7 +299,7 @@ export const useProyecto = create<EstadoProyecto>()(
             modificado: Date.now(),
             instrumentos: s.proyecto.instrumentos.filter((i) => i.id !== id),
           },
-          seleccionadoId: s.seleccionadoId === id ? null : s.seleccionadoId,
+          seleccionadosIds: s.seleccionadosIds.filter((x) => x !== id),
         }));
       },
 
@@ -334,11 +338,32 @@ export const useProyecto = create<EstadoProyecto>()(
       },
 
       seleccionar(id) {
-        set({ seleccionadoId: id });
+        set({ seleccionadosIds: id ? [id] : [] });
+      },
+
+      alternarSeleccion(id) {
+        set((state) => {
+          const yaEsta = state.seleccionadosIds.includes(id);
+          return {
+            seleccionadosIds: yaEsta
+              ? state.seleccionadosIds.filter((x) => x !== id)
+              : [...state.seleccionadosIds, id],
+          };
+        });
+      },
+
+      seleccionarVarios(ids) {
+        set({ seleccionadosIds: [...ids] });
+      },
+
+      seleccionarTodos() {
+        set((state) => ({
+          seleccionadosIds: state.proyecto.instrumentos.map((i) => i.id),
+        }));
       },
 
       cargarProyecto(proyecto) {
-        set({ proyecto, seleccionadoId: null });
+        set({ proyecto, seleccionadosIds: [] });
       },
 
       renombrar(nombre) {
@@ -348,7 +373,7 @@ export const useProyecto = create<EstadoProyecto>()(
       },
 
       reiniciar() {
-        set({ proyecto: proyectoVacio(), seleccionadoId: null });
+        set({ proyecto: proyectoVacio(), seleccionadosIds: [] });
       },
 
       setIdioma(idioma) {

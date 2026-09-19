@@ -1025,3 +1025,14 @@ button:focus-visible {
   min-height: 36px;
   font-size: 0.85rem;
 }
+
+/* ---------- Panel de seleccion multiple ---------- */
+
+.ma-panel-sel__pista {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--ma-radio-chico);
+  background: var(--ma-superficie);
+  color: var(--ma-texto-suave);
+  font-size: 0.82rem;
+}
