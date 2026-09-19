@@ -9,11 +9,14 @@ interface Props {
   description: string;
   /** Las herramientas internas no se indexan. */
   noindex?: boolean;
+  /** Slug del OG image en `public/og/<slug>.png`. Default: "default". */
+  ogSlug?: string;
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, ogSlug = 'default' } = Astro.props;
 const sinIndexar = noindex || !SITIO_INDEXABLE;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImagen = new URL(`${import.meta.env.BASE_URL}og/${ogSlug}.png`, Astro.site);
 const inicio = import.meta.env.BASE_URL;
 const anio = new Date().getFullYear();
 ---
@@ -32,6 +35,17 @@ const anio = new Date().getFullYear();
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_AR" />
+    <meta property="og:site_name" content="MasAlto StagePlot" />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={ogImagen.href} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImagen.href} />
+    <link rel="alternate" hreflang="es-AR" href={canonical.href} />
+    <link rel="alternate" hreflang="x-default" href={canonical.href} />
     <link rel="icon" type="image/png" href={`${inicio}favicon.png`} />
     <link
       rel="apple-touch-icon"
@@ -43,6 +57,30 @@ const anio = new Date().getFullYear();
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Nunito+Sans:wght@400;600;700&display=swap"
+    />
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'Organization',
+            '@id': `${Astro.site?.href}#organization`,
+            name: 'MasAlto Producciones',
+            url: Astro.site?.href,
+            logo: `${Astro.site?.href}${inicio.slice(1)}icons/pwa-512x512.png`,
+          },
+          {
+            '@type': 'WebSite',
+            '@id': `${Astro.site?.href}#website`,
+            name: 'MasAlto StagePlot',
+            url: `${Astro.site?.href ?? ''}${inicio}`.replace(/\/+$/, '/'),
+            inLanguage: 'es-AR',
+            publisher: { '@id': `${Astro.site?.href}#organization` },
+          },
+        ],
+      })}
     />
     <slot name="head-extra" />
   </head>
