@@ -1,0 +1,39 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { PLANTILLAS_SEO, SLUGS_PLANTILLA_SEO } from '@/data/plantillasSeo';
+
+const inicio = import.meta.env.BASE_URL;
+---
+
+<BaseLayout
+  title="Plantillas de stage plot por genero - MasAlto StagePlot"
+  description="Plantillas precargadas de stage plot para banda de rock, solista con guitarra, set de DJ y folklore. Editas y exportas PDF en minutos."
+>
+  <section class="ma-hero ma-contenedor">
+    <h1>Plantillas por genero</h1>
+    <p>
+      Empeza desde el setup tipo de tu genero y adapta lo que necesites. Cada
+      plantilla trae los instrumentos, canales y microfonos sugeridos que un
+      sonidista experimentado espera ver.
+    </p>
+  </section>
+
+  <section class="ma-guias ma-contenedor">
+    <ul class="ma-guias__lista">
+      {SLUGS_PLANTILLA_SEO.map((slug) => {
+        const e = PLANTILLAS_SEO[slug]!;
+        return (
+          <li>
+            <a href={`${inicio}plantillas/${slug}/`}>
+              <h2>{e.nombre}</h2>
+              <p>{e.lead}</p>
+              <p class="ma-guias__meta ma-dato">
+                {e.incluye.length} elementos &middot; {e.canales} canales aproximados
+              </p>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+</BaseLayout>

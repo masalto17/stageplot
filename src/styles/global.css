@@ -1302,3 +1302,47 @@ button:focus-visible {
 @media (max-width: 640px) {
   .ma-guia__toc ol { columns: 1; }
 }
+
+/* ---------- Landing plantilla por genero ---------- */
+
+.ma-plantilla { padding: 40px 0 80px; }
+
+.ma-plantilla__header {
+  max-width: 780px;
+  margin: 0 auto 32px;
+}
+
+.ma-plantilla__stats {
+  color: var(--ma-texto-suave);
+  font-size: 0.85rem;
+  margin: 0 0 20px;
+}
+
+.ma-plantilla__cuerpo {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.ma-plantilla__cuerpo section { margin: 40px 0; }
+.ma-plantilla__cuerpo h2 { font-size: 1.5rem; margin: 0 0 14px; }
+.ma-plantilla__cuerpo p { line-height: 1.7; margin: 0 0 14px; font-size: 1.02rem; }
+.ma-plantilla__cuerpo ul { padding-left: 24px; margin: 0 0 14px; }
+.ma-plantilla__cuerpo li { line-height: 1.6; margin-bottom: 8px; }
+
+.ma-plantilla__grid {
+  display: grid;
+  gap: 28px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.ma-plantilla__relacionadas ul { list-style: none; padding: 0; }
+.ma-plantilla__relacionadas li { margin-bottom: 8px; }
+.ma-plantilla__relacionadas a {
+  color: var(--ma-rojo);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .ma-plantilla__grid { grid-template-columns: 1fr; }
+}
