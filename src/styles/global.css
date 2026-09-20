@@ -2051,3 +2051,228 @@ button:focus-visible {
   .landing__demo-item { opacity: 1; transform: translateY(0); }
   .landing__seccion { opacity: 1; transform: none; }
 }
+
+/* ==========================================================================
+   Landing premium — vanguardia (scroll progress, sticky nav, mask reveal,
+   ticker reverso, transiciones con clip-path).
+   ========================================================================== */
+
+/* ---------- Scroll progress bar ---------- */
+
+.landing__progreso {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.landing__progreso-barra {
+  height: 100%;
+  background: var(--ma-rojo);
+  transform: scaleX(0);
+  transform-origin: 0 0;
+  will-change: transform;
+  transition: transform 0.05s linear;
+  box-shadow: 0 1px 8px rgba(227, 6, 19, 0.5);
+}
+
+/* ---------- Sticky mini-nav ---------- */
+
+.landing__mininav {
+  position: fixed;
+  top: 3px;
+  left: 0;
+  right: 0;
+  z-index: 55;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: saturate(180%) blur(18px);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.landing__mininav--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.landing__mininav-inner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 14px 24px;
+}
+
+.landing__mininav-marca {
+  font-family: var(--ma-fuente-datos);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ma-texto-suave);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.landing__mininav-marca span {
+  color: var(--ma-rojo);
+  margin-left: 4px;
+}
+
+.landing__mininav-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 4px;
+  flex: 1 1 auto;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.landing__mininav-lista a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--ma-texto);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.86rem;
+  transition: background 0.15s ease, color 0.15s ease;
+  position: relative;
+}
+
+.landing__mininav-lista a span {
+  color: var(--ma-rojo);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.landing__mininav-lista a:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.landing__mininav-lista a.activo {
+  background: var(--ma-negro);
+  color: var(--ma-blanco);
+}
+
+.landing__mininav-lista a.activo span {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.landing__mininav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--ma-rojo);
+  color: var(--ma-blanco);
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.86rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.landing__mininav-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(227, 6, 19, 0.35);
+}
+
+.landing__mininav-cta span {
+  font-family: var(--ma-fuente-datos);
+  transition: transform 0.2s ease;
+}
+
+.landing__mininav-cta:hover span { transform: translateX(3px); }
+
+@media (max-width: 900px) {
+  .landing__mininav-lista { display: none; }
+}
+
+/* ---------- Ticker reverso ---------- */
+
+.landing__ticker--reverso {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--ma-blanco);
+}
+
+.landing__ticker--reverso .landing__ticker-inner {
+  animation-direction: reverse;
+  animation-duration: 40s;
+}
+
+.landing__ticker--reverso .landing__ticker-lote {
+  color: var(--ma-texto-suave);
+}
+
+.landing__ticker--reverso .landing__ticker-lote span:nth-child(even) {
+  color: var(--ma-rojo);
+}
+
+/* ---------- Mask reveal en headings ---------- */
+
+[data-mask-reveal] {
+  clip-path: inset(0 100% -0.2em 0);
+  transition: clip-path 1s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+[data-mask-reveal].mask-visible {
+  clip-path: inset(0 0 -0.2em 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-mask-reveal] { clip-path: none !important; }
+}
+
+/* ---------- Clip-path angulados entre secciones ----------
+   Secciones oscuras (hero, ecosistema) reciben corte diagonal abajo para
+   introducir la siguiente seccion clara con un chip visual. Efecto sutil
+   (~24 px) para no chocar con el layout. */
+
+.landing__ecosistema {
+  clip-path: polygon(0 24px, 100% 0, 100% 100%, 0 100%);
+  margin-top: -24px;
+}
+
+.landing__hero {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 24px), 0 100%);
+}
+
+.landing__ticker {
+  margin-top: -24px;
+  padding-top: 44px;
+}
+
+/* ---------- Estados focus visibles ---------- */
+
+.landing__mininav-lista a:focus-visible,
+.landing__mininav-cta:focus-visible,
+.landing__boton:focus-visible {
+  outline: 3px solid var(--ma-rojo);
+  outline-offset: 3px;
+}
+
+/* Smooth scroll para el jump del mini-nav. */
+html { scroll-behavior: smooth; }
+:target { scroll-margin-top: 80px; }
+
+/* ---------- Reduccion de movimiento ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .landing__mininav { transition: none; }
+  .landing__progreso-barra { transition: none; }
+}

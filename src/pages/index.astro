@@ -29,9 +29,30 @@ const ECOSISTEMA: readonly Ecosistema[] = [
   ogSlug="default"
 >
   <div class="landing">
+  <!-- Barra de progreso de scroll (fija arriba, roja, delgada). -->
+  <div class="landing__progreso" aria-hidden="true">
+    <div class="landing__progreso-barra"></div>
+  </div>
+
+  <!-- Mini-nav sticky que aparece al pasar el hero. Los items se destacan
+       segun la seccion visible (IntersectionObserver). -->
+  <nav class="landing__mininav" aria-label="Navegacion interna">
+    <div class="landing__contenedor landing__mininav-inner">
+      <a href="#hero" class="landing__mininav-marca ma-dato">MasAlto <span>StagePlot</span></a>
+      <ol class="landing__mininav-lista">
+        <li><a href="#numeros" data-nav-target="numeros"><span class="ma-dato">01</span>Numeros</a></li>
+        <li><a href="#features" data-nav-target="features"><span class="ma-dato">02</span>Features</a></li>
+        <li><a href="#quien" data-nav-target="quien"><span class="ma-dato">03</span>Para quien</a></li>
+        <li><a href="#guias" data-nav-target="guias"><span class="ma-dato">04</span>Guias</a></li>
+        <li><a href="#ecosistema" data-nav-target="ecosistema"><span class="ma-dato">05</span>Ecosistema</a></li>
+      </ol>
+      <a class="landing__mininav-cta" href={crearRock}>Empezar<span aria-hidden="true">&rarr;</span></a>
+    </div>
+  </nav>
+
 
     <!-- ============ HERO ============ -->
-    <section class="landing__hero" data-spotlight aria-labelledby="hero-h1">
+    <section class="landing__hero" id="hero" data-section="Hero" data-spotlight aria-labelledby="hero-h1">
       <div class="landing__hero-fondo" aria-hidden="true">
         <div class="landing__spotlight"></div>
         <div class="landing__grid-fondo"></div>
@@ -171,10 +192,10 @@ const ECOSISTEMA: readonly Ecosistema[] = [
     </div>
 
     <!-- ============ NUMEROS ============ -->
-    <section class="landing__seccion landing__numeros" data-reveal>
+    <section class="landing__seccion landing__numeros" id="numeros" data-section="Numeros" data-reveal>
       <div class="landing__contenedor">
         <p class="landing__eyebrow">Que hay adentro</p>
-        <h2 class="landing__h2">Herramienta chica, planos serios.</h2>
+        <h2 class="landing__h2" data-mask-reveal>Herramienta chica, planos serios.</h2>
         <div class="landing__stat-grid">
           <div class="landing__stat">
             <p class="landing__stat-numero" data-count="31">0</p>
@@ -200,11 +221,35 @@ const ECOSISTEMA: readonly Ecosistema[] = [
       </div>
     </section>
 
+    <!-- Ticker reverso: microfonos y modelos populares. Corre en sentido
+         inverso al primero para reforzar la sensacion de estar rodeado
+         de catalogo. -->
+    <div class="landing__ticker landing__ticker--reverso" aria-hidden="true">
+      <div class="landing__ticker-inner">
+        {Array.from({length: 3}).map(() => (
+          <div class="landing__ticker-lote">
+            <span>SM57</span><span>&bull;</span>
+            <span>SM58</span><span>&bull;</span>
+            <span>Beta 52</span><span>&bull;</span>
+            <span>Beta 91A</span><span>&bull;</span>
+            <span>KM184</span><span>&bull;</span>
+            <span>SM81</span><span>&bull;</span>
+            <span>e604</span><span>&bull;</span>
+            <span>MD421</span><span>&bull;</span>
+            <span>D6 / D2</span><span>&bull;</span>
+            <span>DPA 4099</span><span>&bull;</span>
+            <span>C414</span><span>&bull;</span>
+            <span>SLX + SM58</span><span>&bull;</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
     <!-- ============ FEATURES ============ -->
-    <section class="landing__seccion landing__features" data-reveal>
+    <section class="landing__seccion landing__features" id="features" data-section="Features" data-reveal>
       <div class="landing__contenedor">
         <p class="landing__eyebrow">Por que funciona</p>
-        <h2 class="landing__h2">Detalles que hacen la diferencia.</h2>
+        <h2 class="landing__h2" data-mask-reveal>Detalles que hacen la diferencia.</h2>
 
         <div class="landing__grid-cards">
           <article class="landing__card" data-tilt>
@@ -247,10 +292,10 @@ const ECOSISTEMA: readonly Ecosistema[] = [
     </section>
 
     <!-- ============ PARA QUIEN ============ -->
-    <section class="landing__seccion landing__para-quien" data-reveal>
+    <section class="landing__seccion landing__para-quien" id="quien" data-section="Quien" data-reveal>
       <div class="landing__contenedor">
         <p class="landing__eyebrow">Para quien</p>
-        <h2 class="landing__h2">Tres oficios distintos, una misma herramienta.</h2>
+        <h2 class="landing__h2" data-mask-reveal>Tres oficios distintos, una misma herramienta.</h2>
 
         <div class="landing__personas">
           <article class="landing__persona">
@@ -275,10 +320,10 @@ const ECOSISTEMA: readonly Ecosistema[] = [
     </section>
 
     <!-- ============ GUIAS ============ -->
-    <section class="landing__seccion landing__guias" data-reveal>
+    <section class="landing__seccion landing__guias" id="guias" data-section="Guias" data-reveal>
       <div class="landing__contenedor">
         <p class="landing__eyebrow">Aprender</p>
-        <h2 class="landing__h2">Guias tecnicas sin relleno.</h2>
+        <h2 class="landing__h2" data-mask-reveal>Guias tecnicas sin relleno.</h2>
         <p class="landing__intro">
           Antes de armar un stage plot serio, vale la pena saber que va dentro.
           Escritas por gente que trabaja en el rider, no por generadores de
@@ -307,12 +352,12 @@ const ECOSISTEMA: readonly Ecosistema[] = [
     </section>
 
     <!-- ============ ECOSISTEMA ============ -->
-    <section class="landing__seccion landing__ecosistema" data-reveal>
+    <section class="landing__seccion landing__ecosistema" id="ecosistema" data-section="Ecosistema" data-reveal>
       <div class="landing__contenedor">
         <div class="landing__eco-header">
           <div>
             <p class="landing__eyebrow landing__eyebrow--claro">Parte del ecosistema</p>
-            <h2 class="landing__h2 landing__h2--claro">MasAlto: escenarios, sonido, energia y espacios.</h2>
+            <h2 class="landing__h2 landing__h2--claro" data-mask-reveal>MasAlto: escenarios, sonido, energia y espacios.</h2>
             <p class="landing__intro landing__intro--claro">
               StagePlot es la primera pieza de una familia de herramientas y
               servicios que MasAlto pone a disposicion del ecosistema musical
@@ -341,10 +386,10 @@ const ECOSISTEMA: readonly Ecosistema[] = [
     </section>
 
     <!-- ============ CTA FINAL ============ -->
-    <section class="landing__seccion landing__cta-final" data-reveal>
+    <section class="landing__seccion landing__cta-final" id="empezar" data-section="Empezar" data-reveal>
       <div class="landing__contenedor">
         <p class="landing__eyebrow">Empezar</p>
-        <h2 class="landing__h2">Tu primer stage plot en 5 minutos.</h2>
+        <h2 class="landing__h2" data-mask-reveal>Tu primer stage plot en 5 minutos.</h2>
         <p class="landing__intro">
           Gratis. Desde el celular. Sin registro. Sin subida a la nube. Cuando
           termines, exportas el PDF y lo compartis por WhatsApp o mail.
@@ -364,6 +409,70 @@ const ECOSISTEMA: readonly Ecosistema[] = [
   </div>
 
   <script>
+
+    // ----- Scroll progress bar -----
+    const progreso = document.querySelector<HTMLElement>('.landing__progreso-barra');
+    const onScroll = () => {
+      if (!progreso) return;
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      const p = total > 0 ? Math.max(0, Math.min(1, window.scrollY / total)) : 0;
+      progreso.style.transform = `scaleX(${p})`;
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // ----- Sticky mini-nav: aparece pasado el hero, marca la seccion activa -----
+    const mininav = document.querySelector<HTMLElement>('.landing__mininav');
+    const heroEl = document.getElementById('hero');
+    if (mininav && heroEl) {
+      const io = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry) return;
+          mininav.classList.toggle('landing__mininav--visible', !entry.isIntersecting);
+        },
+        { threshold: 0.1 },
+      );
+      io.observe(heroEl);
+    }
+
+    // Marcar el item activo del mini-nav segun la seccion mas visible.
+    const secciones = document.querySelectorAll<HTMLElement>('[data-section]');
+    const enlaces = document.querySelectorAll<HTMLElement>('[data-nav-target]');
+    const marcarActivo = (id: string) => {
+      for (const a of enlaces) {
+        a.classList.toggle('activo', a.dataset.navTarget === id);
+      }
+    };
+    const seccionObserver = new IntersectionObserver(
+      (entries) => {
+        // Usa la primera seccion que este intersectando (top-first).
+        const visibles = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visibles.length > 0) {
+          const id = visibles[0]!.target.id;
+          if (id) marcarActivo(id);
+        }
+      },
+      { rootMargin: '-40% 0px -50% 0px', threshold: 0 },
+    );
+    secciones.forEach((s) => seccionObserver.observe(s));
+
+    // ----- Reveal de headings con mask animation -----
+    const revelacionesTexto = document.querySelectorAll<HTMLElement>('[data-mask-reveal]');
+    const io3 = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('mask-visible');
+            io3.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.5 },
+    );
+    revelacionesTexto.forEach((el) => io3.observe(el));
+
     // ----- Cursor spotlight en el hero -----
     const hero = document.querySelector('[data-spotlight]') as HTMLElement | null;
     if (hero) {
