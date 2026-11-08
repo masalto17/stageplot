@@ -2,6 +2,7 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { Image } from 'astro:assets';
 import logoBlanco from '@/assets/brand-ecosistema/masalto-madre-blanco.png';
+import { PLANTILLAS_SEO, SLUGS_PLANTILLA_SEO } from '@/data/plantillasSeo';
 
 const inicio = import.meta.env.BASE_URL;
 const crear = `${inicio}crear/`;
@@ -347,6 +348,34 @@ const ECOSISTEMA: readonly Ecosistema[] = [
               <span class="landing__guia-flecha" aria-hidden="true">&rarr;</span>
             </a>
           </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ PLANTILLAS ============ -->
+    <section class="landing__seccion landing__guias" id="plantillas" data-section="Plantillas" data-reveal>
+      <div class="landing__contenedor">
+        <p class="landing__eyebrow">Empezar rapido</p>
+        <h2 class="landing__h2" data-mask-reveal>Plantillas por genero.</h2>
+        <p class="landing__intro">
+          No hace falta arrancar de un lienzo vacio. Cada plantilla trae
+          instrumentos, canales y micros sugeridos. Editas y exportas.
+        </p>
+
+        <ul class="landing__guias-lista">
+          {SLUGS_PLANTILLA_SEO.map((slug) => {
+            const e = PLANTILLAS_SEO[slug]!;
+            return (
+              <li>
+                <a href={`${inicio}plantillas/${slug}/`}>
+                  <span class="landing__guia-tag ma-dato">Plantilla &middot; {e.canales} ch</span>
+                  <h3>{e.nombre}</h3>
+                  <p>{e.lead}</p>
+                  <span class="landing__guia-flecha" aria-hidden="true">&rarr;</span>
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>

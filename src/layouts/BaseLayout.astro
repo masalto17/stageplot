@@ -11,18 +11,27 @@ interface Props {
   noindex?: boolean;
   /** Slug del OG image en `public/og/<slug>.png`. Default: "default". */
   ogSlug?: string;
+  /** Editor a pantalla completa: oculta el footer de marketing. */
+  herramienta?: boolean;
 }
 
-const { title, description, noindex = false, ogSlug = 'default' } = Astro.props;
+const { title, description, noindex = false, ogSlug = 'default', herramienta = false } = Astro.props;
 const sinIndexar = noindex || !SITIO_INDEXABLE;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImagen = new URL(`${import.meta.env.BASE_URL}og/${ogSlug}.png`, Astro.site);
 const inicio = import.meta.env.BASE_URL;
 const anio = new Date().getFullYear();
+const crear = `${inicio}crear/`;
+const plantillas = `${inicio}plantillas/`;
+const guias = `${inicio}guias/`;
+const path = Astro.url.pathname;
+const enPlantillas = path.includes('/plantillas');
+const enGuias = path.includes('/guias');
+const enCrear = path.includes('/crear');
 ---
 
 <!doctype html>
-<html lang="es-AR">
+<html lang="es-AR" class={herramienta ? 'ma-html--herramienta' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -84,7 +93,8 @@ const anio = new Date().getFullYear();
     />
     <slot name="head-extra" />
   </head>
-  <body>
+  <body class={herramienta ? 'ma-herramienta' : undefined}>
+    <a class="ma-skip" href="#contenido">Saltar al contenido</a>
     <header class="ma-header">
       <div class="ma-contenedor ma-header__interior">
         <a href={inicio} aria-label="MasAlto Producciones - inicio">
@@ -97,19 +107,31 @@ const anio = new Date().getFullYear();
             loading="eager"
           />
         </a>
-        <span class="ma-dato" aria-hidden="true">StagePlot</span>
+        <nav class="ma-nav" aria-label="Principal">
+          <a href={plantillas} aria-current={enPlantillas ? 'page' : undefined}>Plantillas</a>
+          <a href={guias} aria-current={enGuias ? 'page' : undefined}>Guias</a>
+          <a
+            class="ma-nav__cta"
+            href={crear}
+            aria-current={enCrear ? 'page' : undefined}
+          >
+            Crear
+          </a>
+        </nav>
       </div>
     </header>
 
-    <main>
+    <main id="contenido">
       <slot />
     </main>
 
-    <footer class="ma-footer">
-      <div class="ma-contenedor">
-        <p>MasAlto Producciones &middot; {anio}</p>
-      </div>
-    </footer>
+    {!herramienta && (
+      <footer class="ma-footer">
+        <div class="ma-contenedor">
+          <p>MasAlto Producciones &middot; {anio}</p>
+        </div>
+      </footer>
+    )}
 
     <script is:inline define:vars={{ inicio }}>
       // Registro del Service Worker. El scope tiene que ser la subruta completa

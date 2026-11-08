@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useDialogo } from '@/hooks/useDialogo';
 import { useProyecto } from '@/store/proyecto';
 import {
   listarProyectos,
@@ -33,6 +34,7 @@ const NOMBRES_PLANTILLA: Record<string, { es: string; en: string }> = {
  */
 export function ModalProyectos({ idioma, onCerrar }: Props) {
   const t = UI[idioma];
+  const cajaRef = useDialogo(onCerrar);
   const proyectoActual = useProyecto((s) => s.proyecto);
   const [proyectos, setProyectos] = useState<
     Awaited<ReturnType<typeof listarProyectos>>
@@ -93,13 +95,15 @@ export function ModalProyectos({ idioma, onCerrar }: Props) {
   };
 
   return (
-    <div className="ma-modal" role="dialog" aria-modal="true" onClick={onCerrar}>
+    <div className="ma-modal" role="dialog" aria-modal="true" aria-labelledby="ma-proyectos-titulo" onClick={onCerrar}>
       <div
+        ref={cajaRef}
         className="ma-modal__caja ma-modal__caja--ancho"
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="ma-modal__header">
-          <h2>{t.proyectosTitulo}</h2>
+          <h2 id="ma-proyectos-titulo">{t.proyectosTitulo}</h2>
           <button
             type="button"
             className="ma-boton-icono"

@@ -60,6 +60,8 @@ export function useAtajos() {
         return;
       }
       if (evento.key === 'Escape') {
+        // Un dialog abierto consume Escape; no deseleccionar detras.
+        if (document.querySelector('[role="dialog"]')) return;
         seleccionar(null);
       }
     }

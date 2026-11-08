@@ -1,0 +1,25 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const inicio = import.meta.env.BASE_URL;
+---
+
+<BaseLayout
+  title="Pagina no encontrada - MasAlto StagePlot"
+  description="Esa URL no existe en MasAlto StagePlot."
+  noindex
+>
+  <section class="ma-hero ma-contenedor">
+    <p class="ma-dato">404</p>
+    <h1>No encontramos esa pagina</h1>
+    <p>
+      El link puede estar vencido o mal escrito. Volve al inicio, mira las
+      plantillas o arma un stage plot nuevo.
+    </p>
+    <div class="ma-hero__acciones">
+      <a class="ma-boton" href={`${inicio}crear/`}>Crear stage plot</a>
+      <a class="ma-boton ma-boton--secundario" href={`${inicio}plantillas/`}>Plantillas</a>
+      <a class="ma-boton ma-boton--secundario" href={inicio}>Inicio</a>
+    </div>
+  </section>
+</BaseLayout>
