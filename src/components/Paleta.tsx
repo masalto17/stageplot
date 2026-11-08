@@ -55,7 +55,7 @@ export function Paleta() {
       </div>
 
       {totalVisible === 0 && (
-        <p className="ma-paleta__vacio">—</p>
+        <p className="ma-paleta__vacio">{UI[idioma].paletaVacio}</p>
       )}
 
       {ORDEN.map((cat) => {

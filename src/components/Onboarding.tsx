@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useProyecto } from '@/store/proyecto';
 import { UI } from '@/i18n/idioma';
+import { useDialogo } from '@/hooks/useDialogo';
 
 const CLAVE = 'stageplot:onboarding-visto';
 
@@ -10,16 +11,7 @@ const CLAVE = 'stageplot:onboarding-visto';
  * tardia y opcional; hoy no hay adonde llevarla).
  */
 export function Onboarding() {
-  const idioma = useProyecto((s) => s.idioma);
   const [visible, setVisible] = useState(false);
-  const [paso, setPaso] = useState(0);
-  const t = UI[idioma];
-
-  const PASOS = [
-    { titulo: t.agregarEquipos, texto: t.agregarEquiposDesc },
-    { titulo: t.listaSeArma, texto: t.listaSeArmaDesc },
-    { titulo: t.compartilo, texto: t.compartiloDesc },
-  ];
 
   useEffect(() => {
     try {
@@ -29,8 +21,6 @@ export function Onboarding() {
     }
   }, []);
 
-  if (!visible) return null;
-
   const cerrar = () => {
     try {
       localStorage.setItem(CLAVE, '1');
@@ -38,25 +28,41 @@ export function Onboarding() {
     setVisible(false);
   };
 
+  if (!visible) return null;
+  return <CajaOnboarding onCerrar={cerrar} />;
+}
+
+function CajaOnboarding({ onCerrar }: { onCerrar: () => void }) {
+  const idioma = useProyecto((s) => s.idioma);
+  const [paso, setPaso] = useState(0);
+  const t = UI[idioma];
+  const cajaRef = useDialogo(onCerrar);
+
+  const PASOS = [
+    { titulo: t.agregarEquipos, texto: t.agregarEquiposDesc },
+    { titulo: t.listaSeArma, texto: t.listaSeArmaDesc },
+    { titulo: t.compartilo, texto: t.compartiloDesc },
+  ];
+
   const actual = PASOS[paso]!;
   const ultimo = paso === PASOS.length - 1;
 
   return (
-    <div className="ma-modal" role="dialog" aria-modal="true" aria-label={actual.titulo}>
-      <div className="ma-modal__caja">
+    <div className="ma-modal" role="dialog" aria-modal="true" aria-labelledby="ma-onboarding-titulo">
+      <div className="ma-modal__caja" ref={cajaRef} tabIndex={-1}>
         <p className="ma-modal__contador ma-dato">
           {paso + 1} / {PASOS.length}
         </p>
-        <h2>{actual.titulo}</h2>
+        <h2 id="ma-onboarding-titulo">{actual.titulo}</h2>
         <p>{actual.texto}</p>
         <div className="ma-modal__acciones">
-          <button type="button" className="ma-boton ma-boton--secundario" onClick={cerrar}>
+          <button type="button" className="ma-boton ma-boton--secundario" onClick={onCerrar}>
             {t.saltar}
           </button>
           <button
             type="button"
             className="ma-boton"
-            onClick={() => (ultimo ? cerrar() : setPaso(paso + 1))}
+            onClick={() => (ultimo ? onCerrar() : setPaso(paso + 1))}
           >
             {ultimo ? t.empezar : t.siguiente}
           </button>

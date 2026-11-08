@@ -93,6 +93,9 @@ interface Copy {
   grillaOn: string;
   grillaOff: string;
   buscarPaleta: string;
+  paletaVacio: string;
+  pdfError: string;
+  linkInvalido: string;
   categorias: Record<string, string>;
   senales: Record<'linea' | 'micro' | 'inalambrico' | 'monitor', string>;
 }
@@ -172,6 +175,9 @@ export const UI: Record<Idioma, Copy> = {
     grillaOn: 'Grilla',
     grillaOff: 'Grilla',
     buscarPaleta: 'Buscar equipo...',
+    paletaVacio: 'Ningun equipo coincide con la busqueda.',
+    pdfError: 'No pude generar el PDF. Proba de nuevo.',
+    linkInvalido: 'Ese link de proyecto esta roto o es de una version vieja.',
     categorias: {
       bateria: 'Bateria',
       percusion: 'Percusion',
@@ -265,6 +271,9 @@ export const UI: Record<Idioma, Copy> = {
     grillaOn: 'Grid',
     grillaOff: 'Grid',
     buscarPaleta: 'Search gear...',
+    paletaVacio: 'No gear matches that search.',
+    pdfError: 'Could not generate the PDF. Try again.',
+    linkInvalido: 'That project link is broken or from an older version.',
     categorias: {
       bateria: 'Drums',
       percusion: 'Percussion',

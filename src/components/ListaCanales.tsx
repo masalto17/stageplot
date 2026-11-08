@@ -108,7 +108,7 @@ function FilaCanal({ canal, idioma, detalle, onSeleccionar }: PropsFila) {
   const setOverride = useProyecto((s) => s.setCanalOverride);
   const t = UI[idioma];
   const sugerencias = sugerenciasMic(canal.senal);
-  const listaId = `mic-${canal.senal}`;
+  const listaId = `mic-${canal.instrumentoId}-${canal.indiceCanal}`;
   const equipo = EQUIPOS_POR_ID.get(
     useProyecto
       .getState()
@@ -136,7 +136,7 @@ function FilaCanal({ canal, idioma, detalle, onSeleccionar }: PropsFila) {
   };
 
   return (
-    <tr>
+    <tr onClick={onSeleccionar}>
       <td className="ma-dato">{canal.numero}</td>
       <td>
         <input
@@ -147,9 +147,9 @@ function FilaCanal({ canal, idioma, detalle, onSeleccionar }: PropsFila) {
           onKeyDown={(e) => {
             if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
           }}
-          onClick={onSeleccionar}
           className="ma-canales__input"
           placeholder={template?.nombre[idioma] ?? ''}
+          aria-label={`${t.canales} ${canal.numero}`}
         />
       </td>
       <td className="ma-dato">{t.senales[canal.senal]}</td>
@@ -171,6 +171,7 @@ function FilaCanal({ canal, idioma, detalle, onSeleccionar }: PropsFila) {
               onChange={(e) => patch({ mic: e.target.value })}
               className="ma-canales__input"
               placeholder={template?.micDefault ?? ''}
+              aria-label={t.fuente}
             />
             {sugerencias.length > 0 && (
               <datalist id={listaId}>
@@ -183,6 +184,7 @@ function FilaCanal({ canal, idioma, detalle, onSeleccionar }: PropsFila) {
               value={canal.stand}
               onChange={(e) => patch({ stand: (e.target.value as TipoStand | '') })}
               className="ma-canales__input"
+              aria-label={t.stand}
             >
               <option value="">—</option>
               {STANDS.map((s) => (
@@ -205,6 +207,7 @@ function FilaCanal({ canal, idioma, detalle, onSeleccionar }: PropsFila) {
               onChange={(e) => patch({ nota: e.target.value })}
               className="ma-canales__input ma-canales__input--nota"
               placeholder="—"
+              aria-label={t.nota}
             />
           </td>
         </>

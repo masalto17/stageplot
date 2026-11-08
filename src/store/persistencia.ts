@@ -184,7 +184,12 @@ export async function borrarProyecto(id: string): Promise<void> {
         useProyecto.getState().cargarProyecto(registro.proyecto);
         setActivoId(registro.proyecto.id);
       } else {
-        setActivoId(null);
+        // Sin esto el store queda con el proyecto borrado y el autoguardado
+        // lo resucita en el proximo edit.
+        useProyecto.getState().reiniciar();
+        const vacio = useProyecto.getState().proyecto;
+        setActivoId(vacio.id);
+        await guardar(vacio);
       }
       useProyecto.temporal.getState().clear();
     }

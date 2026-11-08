@@ -112,6 +112,7 @@ export function ControlesLienzo() {
           accept="image/*"
           onChange={cambiarArchivo}
           style={{ display: 'none' }}
+          aria-label={idioma === 'es' ? 'Importar fondo del venue' : 'Import venue background'}
         />
         <button
           type="button"

@@ -409,7 +409,7 @@ interface PropsInstrumento {
   instrumento: Instrumento;
   seleccionado: boolean;
   idioma: 'es' | 'en';
-  onClickInstrumento: (evento: React.MouseEvent) => void;
+  onClickInstrumento: (evento: { shiftKey: boolean; metaKey: boolean; ctrlKey: boolean }) => void;
 }
 
 function InstrumentoLienzo({
@@ -436,8 +436,15 @@ function InstrumentoLienzo({
         touchAction: 'none',
       }}
       onClick={onClickInstrumento}
+      onKeyDown={(evento) => {
+        if (evento.key === 'Enter' || evento.key === ' ') {
+          evento.preventDefault();
+          onClickInstrumento(evento);
+        }
+      }}
       role="button"
       aria-label={etiqueta}
+      aria-pressed={seleccionado}
       tabIndex={0}
     >
       <IconoEquipo equipo={equipo} size={60} seleccionado={seleccionado} idioma={idioma} />
