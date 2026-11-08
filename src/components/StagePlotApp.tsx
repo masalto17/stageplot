@@ -38,6 +38,37 @@ export default function StagePlotApp() {
 
   useEffect(() => {
     let desuscribir: (() => void) | undefined;
+    let cancelado = false;
+
+    const mostrarAvisoPendiente = () => {
+      const avisoSesion = leerAvisoSesion();
+      const copy = UI[useProyecto.getState().idioma];
+      if (avisoSesion === 'importado') setAviso(copy.proyectoImportado);
+      else if (avisoSesion === 'invalido') setAviso(copy.linkInvalido);
+    };
+
+    /** Aplica `#e=` / `#p=` si el hash cambio con el editor ya montado. */
+    const aplicarHash = async () => {
+      const hashTieneLink = hashTieneParametro('e');
+      const proyectoDelLink = leerProyectoDelLink();
+      const hashPlantilla = leerHashPlantilla();
+      if (!hashTieneLink && !hashPlantilla) return;
+
+      if (proyectoDelLink) {
+        await guardarProyectoNuevo(reidentificar(proyectoDelLink));
+        history.replaceState(null, '', location.pathname);
+        marcarAvisoSesion('importado');
+      } else if (hashTieneLink) {
+        history.replaceState(null, '', location.pathname);
+        marcarAvisoSesion('invalido');
+      } else if (hashPlantilla) {
+        const proyecto = plantillaPorSlug(hashPlantilla);
+        if (proyecto) cargar(proyecto);
+        history.replaceState(null, '', location.pathname);
+      }
+      if (!cancelado) mostrarAvisoPendiente();
+    };
+
     (async () => {
       // Prioridad: link compartido > slug plantilla > proyecto persistido.
       // El link se importa como PROYECTO NUEVO, con ids frescos: no
@@ -47,12 +78,12 @@ export default function StagePlotApp() {
       if (proyectoDelLink) {
         await guardarProyectoNuevo(reidentificar(proyectoDelLink));
         history.replaceState(null, '', location.pathname);
-        setAviso(UI[useProyecto.getState().idioma].proyectoImportado);
+        marcarAvisoSesion('importado');
       } else if (hashTieneLink) {
         history.replaceState(null, '', location.pathname);
         const habia = await hidratarProyecto();
         if (!habia) cargar(plantillaBanda());
-        setAviso(UI[useProyecto.getState().idioma].linkInvalido);
+        marcarAvisoSesion('invalido');
       } else {
         const hashPlantilla = leerHashPlantilla();
         if (hashPlantilla) {
@@ -68,11 +99,17 @@ export default function StagePlotApp() {
           if (!habia) cargar(plantillaBanda());
         }
       }
+      if (cancelado) return;
       desuscribir = iniciarAutoguardado();
+      mostrarAvisoPendiente();
       setListo(true);
     })();
+
+    window.addEventListener('hashchange', aplicarHash);
     return () => {
+      cancelado = true;
       desuscribir?.();
+      window.removeEventListener('hashchange', aplicarHash);
     };
   }, [cargar]);
 
@@ -109,7 +146,10 @@ export default function StagePlotApp() {
           <button
             type="button"
             className="ma-boton-icono"
-            onClick={() => setAviso(null)}
+            onClick={() => {
+              limpiarAvisoSesion();
+              setAviso(null);
+            }}
             aria-label={t.cerrarPanel}
           >
             x
@@ -207,6 +247,29 @@ function hashTieneParametro(clave: string): boolean {
   const hash = location.hash.replace(/^#/, '');
   if (!hash) return false;
   return new URLSearchParams(hash).has(clave);
+}
+
+const CLAVE_AVISO = 'stageplot:aviso-url';
+type AvisoUrl = 'importado' | 'invalido';
+
+function marcarAvisoSesion(tipo: AvisoUrl): void {
+  try {
+    sessionStorage.setItem(CLAVE_AVISO, tipo);
+  } catch { /* no-op */ }
+}
+
+function leerAvisoSesion(): AvisoUrl | null {
+  try {
+    const v = sessionStorage.getItem(CLAVE_AVISO);
+    if (v === 'importado' || v === 'invalido') return v;
+  } catch { /* no-op */ }
+  return null;
+}
+
+function limpiarAvisoSesion(): void {
+  try {
+    sessionStorage.removeItem(CLAVE_AVISO);
+  } catch { /* no-op */ }
 }
 
 /** Decodifica un proyecto de `#e=<base64>` si existe. */
